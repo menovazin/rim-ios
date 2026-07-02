@@ -161,6 +161,112 @@ final class ShellReducerTests: XCTestCase {
         }
     }
 
+    // MARK: - Episodes detail navigation
+
+    @MainActor
+    func test_episodeCardTapped_pushesEpisodeDetail() async {
+        let episode = Episode(
+            id: 1, name: "Pilot", episodeCode: "S01E01",
+            airDate: "December 2, 2013",
+            characterIds: [1, 2]
+        )
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.episodes(.cardTapped(episode))) {
+            $0.episodesPath.append(.episodeDetail(EpisodeDetailReducer.State(episode: episode)))
+        }
+    }
+
+    @MainActor
+    func test_episodeCardTapped_leavesEpisodesListStateUnchanged() async {
+        let episode = Episode(
+            id: 1, name: "Pilot", episodeCode: "S01E01",
+            airDate: "December 2, 2013",
+            characterIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            episodes: EpisodesReducer.State(
+                items: IdentifiedArray(uniqueElements: [episode]),
+                page: 1,
+                hasNext: false
+            )
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.episodes(.cardTapped(episode))) {
+            $0.episodesPath.append(.episodeDetail(EpisodeDetailReducer.State(episode: episode)))
+        }
+        XCTAssertEqual(store.state.episodes.items.count, 1)
+        XCTAssertEqual(store.state.episodes.page, 1)
+        XCTAssertEqual(store.state.episodes.hasNext, false)
+    }
+
+    @MainActor
+    func test_switchingTabs_preservesEpisodesStack() async {
+        let episode = Episode(
+            id: 1, name: "Pilot", episodeCode: "S01E01",
+            airDate: "December 2, 2013",
+            characterIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .episodes,
+            episodesPath: StackState([
+                .episodeDetail(EpisodeDetailReducer.State(episode: episode))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.tabSelected(.characters)) {
+            $0.selectedTab = .characters
+            $0.isDrawerOpen = false
+        }
+
+        await store.send(.tabSelected(.episodes)) {
+            $0.selectedTab = .episodes
+            $0.isDrawerOpen = false
+        }
+
+        XCTAssertEqual(store.state.episodesPath.count, 1)
+    }
+
+    // MARK: - Drawer / episodes tab
+
+    @MainActor
+    func test_drawerOpenTapped_opensDrawerForEpisodesAtRoot() async {
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .episodes
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped) {
+            $0.isDrawerOpen = true
+        }
+    }
+
+    @MainActor
+    func test_drawerOpenTapped_blockedWhenEpisodeDetailPushed() async {
+        let episode = Episode(
+            id: 1, name: "Pilot", episodeCode: "S01E01",
+            airDate: "December 2, 2013",
+            characterIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .episodes,
+            episodesPath: StackState([
+                .episodeDetail(EpisodeDetailReducer.State(episode: episode))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped)
+    }
+
     // MARK: - Characters scope still forwards
 
     @MainActor

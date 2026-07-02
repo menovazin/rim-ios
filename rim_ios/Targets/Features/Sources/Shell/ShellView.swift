@@ -17,20 +17,45 @@ public struct ShellView: View {
             set: { store.send(.setDrawerOpen($0)) }
         )
 
-        return NavigationStack(
+        return RimDrawer(isOpen: isDrawerOpen) {
+            drawerMenu
+        } content: {
+            activeTabView
+        }
+    }
+
+    // MARK: - Active tab
+
+    @ViewBuilder
+    private var activeTabView: some View {
+        switch store.selectedTab {
+        case .characters:
+            charactersTab
+
+        case .episodes:
+            episodesTab
+
+        case .locations:
+            locationsTab
+        }
+    }
+
+    // MARK: - Characters tab
+
+    @ViewBuilder
+    private var charactersTab: some View {
+        NavigationStack(
             path: $store.scope(state: \.charactersPath, action: \.charactersPath)
         ) {
-            RimDrawer(isOpen: isDrawerOpen) {
-                drawerMenu
-            } content: {
-                VStack(spacing: 0) {
-                    RimAppBar(
-                        title: store.selectedTab.title,
-                        leading: .menu({ store.send(.drawerOpenTapped) })
-                    )
+            VStack(spacing: 0) {
+                RimAppBar(
+                    title: ShellTab.characters.title,
+                    leading: .menu({ store.send(.drawerOpenTapped) })
+                )
 
-                    activeTabView
-                }
+                CharactersView(
+                    store: store.scope(state: \.characters, action: \.characters)
+                )
             }
             .toolbar(.hidden, for: .navigationBar)
         } destination: { store in
@@ -41,22 +66,45 @@ public struct ShellView: View {
         }
     }
 
-    // MARK: - Active tab
+    // MARK: - Episodes tab
 
     @ViewBuilder
-    private var activeTabView: some View {
-        switch store.selectedTab {
-        case .characters:
-            CharactersView(
-                store: store.scope(state: \.characters, action: \.characters)
+    private var episodesTab: some View {
+        NavigationStack(
+            path: $store.scope(state: \.episodesPath, action: \.episodesPath)
+        ) {
+            VStack(spacing: 0) {
+                RimAppBar(
+                    title: ShellTab.episodes.title,
+                    leading: .menu({ store.send(.drawerOpenTapped) })
+                )
+
+                EpisodesView(
+                    store: store.scope(state: \.episodes, action: \.episodes)
+                )
+            }
+            .toolbar(.hidden, for: .navigationBar)
+        } destination: { store in
+            switch store.case {
+            case .episodeDetail(let episodeStore):
+                EpisodeDetailView(store: episodeStore)
+            }
+        }
+    }
+
+    // MARK: - Locations tab
+
+    @ViewBuilder
+    private var locationsTab: some View {
+        VStack(spacing: 0) {
+            RimAppBar(
+                title: ShellTab.locations.title,
+                leading: .menu({ store.send(.drawerOpenTapped) })
             )
 
-        case .episodes:
-            EpisodesView()
-
-        case .locations:
             LocationsView()
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Drawer menu
@@ -64,7 +112,6 @@ public struct ShellView: View {
     @ViewBuilder
     private var drawerMenu: some View {
         ZStack {
-            
             VStack(spacing: 0) {
                 drawerHeader
 
@@ -89,7 +136,8 @@ public struct ShellView: View {
                 )
                 .padding(.bottom, RimSpacing.sm)
             }
-        }}
+        }
+    }
 
     @ViewBuilder
     private var drawerHeader: some View {
@@ -181,4 +229,3 @@ extension ShellTab {
     .rimTheme(RimTheme(scheme: .light))
     .environment(RimThemeController(scheme: .light))
 }
-

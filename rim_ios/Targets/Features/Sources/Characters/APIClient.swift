@@ -12,6 +12,7 @@ import Networking
 @DependencyClient
 public struct APIClient: Sendable {
     var fetchCharacters: @Sendable (Int) async throws -> PageResult<Character>
+    var fetchEpisodes: @Sendable (Int) async throws -> PageResult<Episode>
 }
 
 extension APIClient: DependencyKey {
@@ -22,6 +23,9 @@ extension APIClient: TestDependencyKey {
     public static let testValue = APIClient()
     public static let previewValue = APIClient(
         fetchCharacters: { _ in
+            PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+        },
+        fetchEpisodes: { _ in
             PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
         }
     )
@@ -46,6 +50,22 @@ extension APIClient {
         return APIClient(
             fetchCharacters: { _ in
                 iterator.next() ?? PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchEpisodes: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            }
+        )
+    }
+
+    /// Returns a deterministic test client that serves episode `pages` in order.
+    public static func test(episodes pages: [PageResult<Episode>]) -> APIClient {
+        var iterator = pages.makeIterator()
+        return APIClient(
+            fetchCharacters: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchEpisodes: { _ in
+                iterator.next() ?? PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
             }
         )
     }
@@ -53,7 +73,16 @@ extension APIClient {
     /// Returns a test client that always throws the given error.
     public static func failing(with error: Error = URLError(.notConnectedToInternet)) -> APIClient {
         APIClient(
-            fetchCharacters: { _ in throw error }
+            fetchCharacters: { _ in throw error },
+            fetchEpisodes: { _ in throw error }
+        )
+    }
+
+    /// Returns a test client for episodes that always throws the given error.
+    public static func failingEpisodes(with error: Error = URLError(.notConnectedToInternet)) -> APIClient {
+        APIClient(
+            fetchCharacters: { _ in throw error },
+            fetchEpisodes: { _ in throw error }
         )
     }
 }
@@ -97,6 +126,37 @@ extension APIClient {
                 }
                 return PageResult(
                     items: characters,
+                    page: page,
+                    totalPages: decoded.info.pages,
+                    hasNext: decoded.info.next != nil
+                )
+            },
+            fetchEpisodes: { page in
+                let url = baseURL.appendingPathComponent("episode")
+                    .appending(queryItems: [URLQueryItem(name: "page", value: "\(page)")])
+                let (data, response) = try await URLSession.shared.data(from: url)
+                guard let http = response as? HTTPURLResponse else {
+                    throw URLError(.badServerResponse)
+                }
+                guard (200..<300).contains(http.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                let decoded = try JSONDecoder().decode(EpisodeResponseDTO.self, from: data)
+                let episodes = decoded.results.map { dto in
+                    Episode(
+                        id: dto.id,
+                        name: dto.name,
+                        episodeCode: dto.episode,
+                        airDate: dto.airDate,
+                        characterIds: dto.characters.compactMap { urlString in
+                            guard let last = URL(string: urlString)?.lastPathComponent,
+                                  let id = Int(last) else { return nil }
+                            return id
+                        }
+                    )
+                }
+                return PageResult(
+                    items: episodes,
                     page: page,
                     totalPages: decoded.info.pages,
                     hasNext: decoded.info.next != nil
