@@ -7,6 +7,9 @@ import SwiftUI
 ///
 /// Adaptive `LazyVGrid` with `(width / 200).clamped(1...6)` columns,
 /// 12pt spacing/padding, 0.72 aspect ratio cards.
+///
+/// Navigation is owned by the Shell; this view emits `cardTapped` and does not
+/// contain a `NavigationStack`.
 public struct CharactersView: View {
     @Bindable public var store: StoreOf<CharactersReducer>
     @Environment(\.rimTheme) private var theme
@@ -16,26 +19,19 @@ public struct CharactersView: View {
     }
 
     public var body: some View {
-        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-            ZStack {
-                theme.colors.background
-                    .ignoresSafeArea()
+        ZStack {
+            theme.colors.background
+                .ignoresSafeArea()
 
-                if store.isLoadingInitial && store.items.isEmpty {
-                    loadingView
-                } else if store.loadFailed && store.items.isEmpty {
-                    errorView
-                } else {
-                    gridView
-                }
-            }
-            .onAppear { store.send(.onAppear) }
-        } destination: { store in
-            switch store.case {
-            case .characterDetail(let characterStore):
-                CharacterDetailView(store: characterStore)
+            if store.isLoadingInitial && store.items.isEmpty {
+                loadingView
+            } else if store.loadFailed && store.items.isEmpty {
+                errorView
+            } else {
+                gridView
             }
         }
+        .onAppear { store.send(.onAppear) }
     }
 
     // MARK: - Loading (full-screen)

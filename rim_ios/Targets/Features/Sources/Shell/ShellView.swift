@@ -5,53 +5,158 @@ import SwiftUI
 public struct ShellView: View {
     @Bindable var store: StoreOf<ShellReducer>
     @Environment(\.rimTheme) private var theme
+    @Environment(RimThemeController.self) private var themeController
 
     public init(store: StoreOf<ShellReducer>) {
         self.store = store
     }
 
     public var body: some View {
-        ZStack {
-            theme.colors.background
-                .ignoresSafeArea()
+        let isDrawerOpen = Binding<Bool>(
+            get: { store.isDrawerOpen },
+            set: { store.send(.setDrawerOpen($0)) }
+        )
 
-            VStack(spacing: 0) {
-                // Temporary top bar — replaced by real AppBar + RimDrawer in issue 05
-                topBar
+        return NavigationStack(
+            path: $store.scope(state: \.charactersPath, action: \.charactersPath)
+        ) {
+            RimDrawer(isOpen: isDrawerOpen) {
+                drawerMenu
+            } content: {
+                VStack(spacing: 0) {
+                    RimAppBar(
+                        title: store.selectedTab.title,
+                        leading: .menu({ store.send(.drawerOpenTapped) })
+                    )
 
-                CharactersView(
-                    store: store.scope(state: \.characters, action: \.characters)
-                )
+                    activeTabView
+                }
+            }
+            .toolbar(.hidden, for: .navigationBar)
+        } destination: { store in
+            switch store.case {
+            case .characterDetail(let characterStore):
+                CharacterDetailView(store: characterStore)
             }
         }
     }
 
-    // MARK: - Temporary top bar
+    // MARK: - Active tab
 
-    private var topBar: some View {
-        HStack {
+    @ViewBuilder
+    private var activeTabView: some View {
+        switch store.selectedTab {
+        case .characters:
+            CharactersView(
+                store: store.scope(state: \.characters, action: \.characters)
+            )
+
+        case .episodes:
+            EpisodesView()
+
+        case .locations:
+            LocationsView()
+        }
+    }
+
+    // MARK: - Drawer menu
+
+    @ViewBuilder
+    private var drawerMenu: some View {
+        ZStack {
+            
+            VStack(spacing: 0) {
+                drawerHeader
+
+                Divider()
+                    .background(theme.colors.textSecondary.opacity(0.15))
+                    .padding(.horizontal, RimSpacing.xxl)
+                    .padding(.top, RimSpacing.md)
+
+                drawerSectionItems
+
+                Spacer()
+
+                Divider()
+                    .background(theme.colors.textSecondary.opacity(0.15))
+                    .padding(.horizontal, RimSpacing.xxl)
+
+                RimDrawerSectionItem(
+                    icon: "rectangle.portrait.and.arrow.right",
+                    title: "Sign Out",
+                    isSelected: false,
+                    action: { store.send(.signOutTapped) }
+                )
+                .padding(.bottom, RimSpacing.sm)
+            }
+        }}
+
+    @ViewBuilder
+    private var drawerHeader: some View {
+        HStack(spacing: 0) {
+            Image(systemName: "atom")
+                .font(.system(size: 24))
+                .foregroundStyle(theme.colors.primary)
+                .frame(width: 24, height: 24)
+
+            Spacer()
+                .frame(width: 12)
+
             Text("Rick & Morty")
                 .rimTextStyle(RimTypography.titleMedium)
-                .foregroundStyle(theme.colors.textPrimary)
                 .fontWeight(.bold)
+                .foregroundStyle(theme.colors.textPrimary)
 
             Spacer()
 
             Button {
-                store.send(.signOutTapped)
+                themeController.toggle()
+                store.send(.themeToggleTapped)
             } label: {
-                Text("Sign Out")
-                    .rimTextStyle(RimTypography.labelLarge)
-                    .foregroundStyle(theme.colors.onPrimary)
-                    .padding(.horizontal, RimSpacing.md)
-                    .padding(.vertical, RimSpacing.sm)
-                    .background(theme.colors.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: RimRadius.small))
+                Image(systemName: themeController.scheme == .dark ? "sun.max" : "moon")
+                    .font(.system(size: 24))
+                    .foregroundStyle(theme.colors.textPrimary)
+                    .frame(width: 40, height: 40)
             }
         }
-        .padding(.horizontal, RimSpacing.lg)
-        .padding(.vertical, RimSpacing.sm)
-        .background(theme.colors.surface)
+        .padding(EdgeInsets(top: RimSpacing.xxl, leading: RimSpacing.xxl, bottom: RimSpacing.xl, trailing: RimSpacing.xxl))
+    }
+
+    @ViewBuilder
+    private var drawerSectionItems: some View {
+        VStack(spacing: 0) {
+            RimDrawerSectionItem(
+                icon: "person.2",
+                title: "Characters",
+                isSelected: store.selectedTab == .characters,
+                action: { store.send(.tabSelected(.characters)) }
+            )
+            RimDrawerSectionItem(
+                icon: "film",
+                title: "Episodes",
+                isSelected: store.selectedTab == .episodes,
+                action: { store.send(.tabSelected(.episodes)) }
+            )
+            RimDrawerSectionItem(
+                icon: "globe",
+                title: "Locations",
+                isSelected: store.selectedTab == .locations,
+                action: { store.send(.tabSelected(.locations)) }
+            )
+        }
+        .padding(.top, RimSpacing.sm)
+    }
+}
+
+// MARK: - Shell helpers
+
+extension ShellTab {
+    fileprivate var title: String {
+        switch self {
+        case .characters: "Characters"
+        case .episodes: "Episodes"
+        case .locations: "Locations"
+        }
     }
 }
 
@@ -64,6 +169,7 @@ public struct ShellView: View {
         }
     )
     .rimTheme(RimTheme(scheme: .dark))
+    .environment(RimThemeController(scheme: .dark))
 }
 
 #Preview("Light") {
@@ -73,4 +179,6 @@ public struct ShellView: View {
         }
     )
     .rimTheme(RimTheme(scheme: .light))
+    .environment(RimThemeController(scheme: .light))
 }
+

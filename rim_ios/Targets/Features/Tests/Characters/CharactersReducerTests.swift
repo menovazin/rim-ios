@@ -260,18 +260,16 @@ final class CharactersReducerTests: XCTestCase {
         }
     }
 
-    // MARK: - cardTapped pushes detail
+    // MARK: - cardTapped delegates selection
 
     @MainActor
-    func test_cardTapped_pushesCharacterDetail() async {
+    func test_cardTapped_doesNotMutateState() async {
         let tapped = character(id: 1)
         let store = TestStore(initialState: CharactersReducer.State()) {
             CharactersReducer()
         }
 
-        await store.send(.cardTapped(tapped)) {
-            $0.path.append(.characterDetail(CharacterDetailReducer.State(character: tapped)))
-        }
+        await store.send(.cardTapped(tapped))
     }
 
     @MainActor
@@ -287,13 +285,6 @@ final class CharactersReducerTests: XCTestCase {
             CharactersReducer()
         }
 
-        await store.send(.cardTapped(tapped)) {
-            $0.path.append(.characterDetail(CharacterDetailReducer.State(character: tapped)))
-            // items/page/hasNext/isLoadingMore remain as in initial
-            $0.items = initial.items
-            $0.page = initial.page
-            $0.hasNext = initial.hasNext
-            $0.isLoadingMore = initial.isLoadingMore
-        }
+        await store.send(.cardTapped(tapped))
     }
 }

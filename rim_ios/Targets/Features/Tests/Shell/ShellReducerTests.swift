@@ -5,8 +5,101 @@ import XCTest
 @testable import Features
 
 final class ShellReducerTests: XCTestCase {
+    private func character(id: Int) -> Character {
+        Character(
+            id: id, name: "Rick", status: "Alive", species: "Human",
+            type: "", gender: "Male", image: "https://example.com/\(id).jpeg",
+            originName: "Earth", originUrl: "",
+            locationName: "Earth", locationUrl: "",
+            episodeIds: [1]
+        )
+    }
+
+    // MARK: - Drawer / tabs
+
     @MainActor
-    func test_signOutDelegatesLogout() async {
+    func test_tabSelected_updatesTabAndClosesDrawer() async {
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .characters,
+            isDrawerOpen: true
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.tabSelected(.episodes)) {
+            $0.selectedTab = .episodes
+            $0.isDrawerOpen = false
+        }
+    }
+
+    @MainActor
+    func test_drawerOpenTapped_opensDrawerAtStackRoot() async {
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped) {
+            $0.isDrawerOpen = true
+        }
+    }
+
+    @MainActor
+    func test_drawerOpenTapped_doesNotOpenWhenDetailPushed() async {
+        let character = self.character(id: 1)
+        let store = TestStore(initialState: ShellReducer.State(
+            charactersPath: StackState([
+                .characterDetail(CharacterDetailReducer.State(character: character))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped)
+    }
+
+    @MainActor
+    func test_setDrawerOpen() async {
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.setDrawerOpen(true)) {
+            $0.isDrawerOpen = true
+        }
+    }
+
+    // MARK: - Theme toggle
+
+    @MainActor
+    func test_themeToggleTapped_flipsAndPersistsScheme() async {
+        let themeStore = ThemeStore.test(scheme: .dark)
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        } withDependencies: {
+            $0.themeStore = themeStore
+        }
+
+        await store.send(.themeToggleTapped)
+        XCTAssertEqual(themeStore.load(), .light)
+    }
+
+    @MainActor
+    func test_themeToggleTapped_flipsLightToDark() async {
+        let themeStore = ThemeStore.test(scheme: .light)
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        } withDependencies: {
+            $0.themeStore = themeStore
+        }
+
+        await store.send(.themeToggleTapped)
+        XCTAssertEqual(themeStore.load(), .dark)
+    }
+
+    // MARK: - Sign Out
+
+    @MainActor
+    func test_signOutTapped_delegatesLogout() async {
         let store = TestStore(initialState: ShellReducer.State()) {
             ShellReducer()
         }
@@ -16,21 +109,68 @@ final class ShellReducerTests: XCTestCase {
     }
 
     @MainActor
+    func test_signOutDoesNotCallTokenStore() async {
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        } withDependencies: {
+            $0.tokenStore = .init()
+        }
+
+        await store.send(.signOutTapped)
+        await store.receive(\.delegate.logout)
+    }
+
+    // MARK: - Per-tab stack preservation
+
+    @MainActor
+    func test_switchingTabs_preservesCharactersStack() async {
+        let character = self.character(id: 1)
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .characters,
+            charactersPath: StackState([
+                .characterDetail(CharacterDetailReducer.State(character: character))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.tabSelected(.episodes)) {
+            $0.selectedTab = .episodes
+            $0.isDrawerOpen = false
+        }
+
+        await store.send(.tabSelected(.characters)) {
+            $0.selectedTab = .characters
+            $0.isDrawerOpen = false
+        }
+
+        XCTAssertEqual(store.state.charactersPath.count, 1)
+    }
+
+    // MARK: - Detail navigation
+
+    @MainActor
+    func test_cardTapped_pushesCharacterDetail() async {
+        let character = self.character(id: 1)
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.characters(.cardTapped(character))) {
+            $0.charactersPath.append(.characterDetail(CharacterDetailReducer.State(character: character)))
+        }
+    }
+
+    // MARK: - Characters scope still forwards
+
+    @MainActor
     func test_charactersScopeForwardsOnAppear() async {
         let store = TestStore(initialState: ShellReducer.State()) {
             ShellReducer()
         } withDependencies: {
             $0.apiClient = .test(pages: [
                 PageResult(
-                    items: [
-                        Character(
-                            id: 1, name: "Rick", status: "Alive", species: "Human",
-                            type: "", gender: "Male", image: "https://example.com/1.jpeg",
-                            originName: "Earth", originUrl: "",
-                            locationName: "Earth", locationUrl: "",
-                            episodeIds: [1]
-                        ),
-                    ],
+                    items: [character(id: 1)],
                     page: 1,
                     totalPages: 1,
                     hasNext: false
@@ -44,31 +184,9 @@ final class ShellReducerTests: XCTestCase {
         }
         await store.receive(\.characters.loadInitialResponse.success) {
             $0.characters.isLoadingInitial = false
-            $0.characters.items = IdentifiedArray(uniqueElements: [
-                Character(
-                    id: 1, name: "Rick", status: "Alive", species: "Human",
-                    type: "", gender: "Male", image: "https://example.com/1.jpeg",
-                    originName: "Earth", originUrl: "",
-                    locationName: "Earth", locationUrl: "",
-                    episodeIds: [1]
-                ),
-            ])
+            $0.characters.items = IdentifiedArray(uniqueElements: [self.character(id: 1)])
             $0.characters.page = 1
             $0.characters.hasNext = false
         }
-    }
-
-    @MainActor
-    func test_signOutDoesNotCallTokenStore() async {
-        // Verify the Shell reducer delegates logout without touching TokenStore directly.
-        // TokenStore is injected as unimplemented — any call would trap.
-        let store = TestStore(initialState: ShellReducer.State()) {
-            ShellReducer()
-        } withDependencies: {
-            $0.tokenStore = .init()
-        }
-
-        await store.send(.signOutTapped)
-        await store.receive(\.delegate.logout)
     }
 }

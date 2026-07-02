@@ -12,31 +12,38 @@ import SwiftUI
 public struct CharacterDetailView: View {
     @Bindable public var store: StoreOf<CharacterDetailReducer>
     @Environment(\.rimTheme) private var theme
+    @Environment(\.dismiss) private var dismiss
 
     public init(store: StoreOf<CharacterDetailReducer>) {
         self.store = store
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                heroImage
+        VStack(spacing: 0) {
+            RimAppBar(
+                title: store.character.name,
+                leading: .back({ dismiss() })
+            )
 
-                statusRow
-                    .padding(.top, RimSpacing.xxl)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    heroImage
 
-                infoRows
-                    .padding(.top, RimSpacing.xxl)
+                    statusRow
+                        .padding(.top, RimSpacing.xxl)
 
-                episodesSection
-                    .padding(.top, RimSpacing.xxl)
+                    infoRows
+                        .padding(.top, RimSpacing.xxl)
+
+                    episodesSection
+                        .padding(.top, RimSpacing.xxl)
+                }
+                .padding(RimSpacing.xxl)
             }
-            .padding(RimSpacing.xxl)
         }
         .background(theme.colors.background)
         .ignoresSafeArea(edges: .bottom)
-        .navigationTitle(store.character.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Hero image

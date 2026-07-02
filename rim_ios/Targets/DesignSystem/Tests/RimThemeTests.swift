@@ -35,4 +35,50 @@ final class RimThemeTests: XCTestCase {
         controller.toggle()
         XCTAssertEqual(controller.scheme, .dark)
     }
+
+    func test_hydration_restoresPersistedScheme() {
+        let persistence = TestPersistence(scheme: .light)
+        let controller = RimThemeController(persistence: persistence)
+
+        XCTAssertEqual(controller.scheme, .light)
+        XCTAssertEqual(controller.theme.scheme, .light)
+    }
+
+    func test_hydration_defaultsToDarkWhenNothingStored() {
+        let persistence = TestPersistence(scheme: nil)
+        let controller = RimThemeController(persistence: persistence)
+
+        XCTAssertEqual(controller.scheme, .dark)
+        XCTAssertEqual(controller.theme.scheme, .dark)
+    }
+
+    func test_toggle_persistsFlippedScheme() {
+        let persistence = TestPersistence(scheme: .dark)
+        let controller = RimThemeController(persistence: persistence)
+
+        controller.toggle()
+
+        XCTAssertEqual(controller.scheme, .light)
+        XCTAssertEqual(persistence.scheme, .light)
+    }
+
+    func test_setScheme_persistsScheme() {
+        let persistence = TestPersistence(scheme: .dark)
+        let controller = RimThemeController(persistence: persistence)
+
+        controller.setScheme(.light)
+
+        XCTAssertEqual(persistence.scheme, .light)
+    }
+}
+
+private final class TestPersistence: RimThemePersistence, @unchecked Sendable {
+    var scheme: RimColorScheme?
+
+    init(scheme: RimColorScheme?) {
+        self.scheme = scheme
+    }
+
+    func load() -> RimColorScheme? { scheme }
+    func save(_ scheme: RimColorScheme) { self.scheme = scheme }
 }
