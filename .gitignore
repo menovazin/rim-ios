@@ -1,0 +1,11 @@
+.agents/
+.cline/
+.clinerules/
+.github/
+.opencode/
+.scratch/
+arch-refs/
+docs/
+STARTER.md
+CONTEXT.md
+howto.md
