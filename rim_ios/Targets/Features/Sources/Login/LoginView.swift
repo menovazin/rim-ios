@@ -41,6 +41,7 @@ public struct LoginView: View {
                             .foregroundStyle(theme.colors.textSecondary)
                         TextField("Enter your name", text: $store.name)
                             .rimTextStyle(RimTypography.bodyLarge)
+                            .frame(height: 30)
                             .foregroundStyle(theme.colors.textPrimary)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)

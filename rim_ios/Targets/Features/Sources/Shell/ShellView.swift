@@ -15,33 +15,47 @@ public struct ShellView: View {
             theme.colors.background
                 .ignoresSafeArea()
 
-            VStack(spacing: RimSpacing.jumbo) {
-                Spacer()
+            VStack(spacing: 0) {
+                // Temporary top bar — replaced by real AppBar + RimDrawer in issue 05
+                topBar
 
-                Text("Rick & Morty")
-                    .rimTextStyle(RimTypography.titleMedium)
-                    .foregroundStyle(theme.colors.textPrimary)
-                    .fontWeight(.bold)
-
-                Spacer()
-
-                Button {
-                    store.send(.signOutTapped)
-                } label: {
-                    Text("Sign Out")
-                        .rimTextStyle(RimTypography.labelLarge)
-                        .foregroundStyle(theme.colors.onPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: RimSpacing.giant)
-                        .background(theme.colors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: RimRadius.small))
-                }
-                .padding(.horizontal, RimSpacing.huge)
-                .padding(.bottom, RimSpacing.jumbo)
+                CharactersView(
+                    store: store.scope(state: \.characters, action: \.characters)
+                )
             }
         }
     }
+
+    // MARK: - Temporary top bar
+
+    private var topBar: some View {
+        HStack {
+            Text("Rick & Morty")
+                .rimTextStyle(RimTypography.titleMedium)
+                .foregroundStyle(theme.colors.textPrimary)
+                .fontWeight(.bold)
+
+            Spacer()
+
+            Button {
+                store.send(.signOutTapped)
+            } label: {
+                Text("Sign Out")
+                    .rimTextStyle(RimTypography.labelLarge)
+                    .foregroundStyle(theme.colors.onPrimary)
+                    .padding(.horizontal, RimSpacing.md)
+                    .padding(.vertical, RimSpacing.sm)
+                    .background(theme.colors.primary)
+                    .clipShape(RoundedRectangle(cornerRadius: RimRadius.small))
+            }
+        }
+        .padding(.horizontal, RimSpacing.lg)
+        .padding(.vertical, RimSpacing.sm)
+        .background(theme.colors.surface)
+    }
 }
+
+// MARK: - Previews
 
 #Preview("Dark") {
     ShellView(
