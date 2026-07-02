@@ -6,6 +6,7 @@ import Models
 public struct CharactersReducer {
     @ObservableState
     public struct State: Equatable {
+        public var path: StackState<Path.State>
         public var items: IdentifiedArrayOf<Character>
         public var page: Int
         public var hasNext: Bool
@@ -15,6 +16,7 @@ public struct CharactersReducer {
         public var loadMoreFailed: Bool
 
         public init(
+            path: StackState<Path.State> = StackState(),
             items: IdentifiedArrayOf<Character> = [],
             page: Int = 1,
             hasNext: Bool = true,
@@ -23,6 +25,7 @@ public struct CharactersReducer {
             loadFailed: Bool = false,
             loadMoreFailed: Bool = false
         ) {
+            self.path = path
             self.items = items
             self.page = page
             self.hasNext = hasNext
@@ -33,7 +36,12 @@ public struct CharactersReducer {
         }
     }
 
-    public enum Action: Equatable {
+    @Reducer(state: .equatable)
+    public enum Path {
+        case characterDetail(CharacterDetailReducer)
+    }
+
+    public enum Action {
         case onAppear
         case loadInitial
         case loadInitialResponse(Result<PageResult<Character>, NSError>)
@@ -41,6 +49,7 @@ public struct CharactersReducer {
         case loadMoreResponse(Result<PageResult<Character>, NSError>)
         case retry
         case cardTapped(Character)
+        case path(StackAction<Path.State, Path.Action>)
     }
 
     @Dependency(\.apiClient) var apiClient
@@ -119,9 +128,14 @@ public struct CharactersReducer {
                     return .send(.loadMore)
                 }
 
-            case .cardTapped:
+            case let .cardTapped(character):
+                state.path.append(.characterDetail(CharacterDetailReducer.State(character: character)))
+                return .none
+
+            case .path:
                 return .none
             }
         }
+        .forEach(\.path, action: \.path)
     }
 }

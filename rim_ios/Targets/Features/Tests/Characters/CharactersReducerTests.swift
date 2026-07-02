@@ -260,14 +260,40 @@ final class CharactersReducerTests: XCTestCase {
         }
     }
 
-    // MARK: - cardTapped no-op
+    // MARK: - cardTapped pushes detail
 
     @MainActor
-    func test_cardTapped_isNoOp() async {
+    func test_cardTapped_pushesCharacterDetail() async {
+        let tapped = character(id: 1)
         let store = TestStore(initialState: CharactersReducer.State()) {
             CharactersReducer()
         }
 
-        await store.send(.cardTapped(character(id: 1)))
+        await store.send(.cardTapped(tapped)) {
+            $0.path.append(.characterDetail(CharacterDetailReducer.State(character: tapped)))
+        }
+    }
+
+    @MainActor
+    func test_cardTapped_leavesGridStateUnchanged() async {
+        let tapped = character(id: 7)
+        let initial = CharactersReducer.State(
+            items: IdentifiedArray(uniqueElements: [character(id: 1), tapped]),
+            page: 2,
+            hasNext: false,
+            isLoadingMore: false
+        )
+        let store = TestStore(initialState: initial) {
+            CharactersReducer()
+        }
+
+        await store.send(.cardTapped(tapped)) {
+            $0.path.append(.characterDetail(CharacterDetailReducer.State(character: tapped)))
+            // items/page/hasNext/isLoadingMore remain as in initial
+            $0.items = initial.items
+            $0.page = initial.page
+            $0.hasNext = initial.hasNext
+            $0.isLoadingMore = initial.isLoadingMore
+        }
     }
 }

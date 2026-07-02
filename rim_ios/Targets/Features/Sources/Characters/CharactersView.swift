@@ -16,19 +16,26 @@ public struct CharactersView: View {
     }
 
     public var body: some View {
-        ZStack {
-            theme.colors.background
-                .ignoresSafeArea()
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+            ZStack {
+                theme.colors.background
+                    .ignoresSafeArea()
 
-            if store.isLoadingInitial && store.items.isEmpty {
-                loadingView
-            } else if store.loadFailed && store.items.isEmpty {
-                errorView
-            } else {
-                gridView
+                if store.isLoadingInitial && store.items.isEmpty {
+                    loadingView
+                } else if store.loadFailed && store.items.isEmpty {
+                    errorView
+                } else {
+                    gridView
+                }
+            }
+            .onAppear { store.send(.onAppear) }
+        } destination: { store in
+            switch store.case {
+            case .characterDetail(let characterStore):
+                CharacterDetailView(store: characterStore)
             }
         }
-        .onAppear { store.send(.onAppear) }
     }
 
     // MARK: - Loading (full-screen)

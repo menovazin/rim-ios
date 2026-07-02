@@ -3,7 +3,7 @@ import Models
 import SwiftUI
 
 extension CharacterStatus {
-    /// Status-dot color from `DESIGN_SYSTEM.md §4.1`.
+    /// Status-dot color from `DESIGN_SYSTEM.md §4.1` / `DESIGN_SYSTEM.md §5`.
     public var color: Color {
         switch self {
         case .alive:   return Color(rimHex: 0x34E27A)
@@ -17,5 +17,15 @@ extension Character {
     /// Resolves the status-dot color, falling back to `.unknown` for unrecognized strings.
     public var statusColor: Color {
         CharacterStatus(rawString: status)?.color ?? CharacterStatus.unknown.color
+    }
+
+    /// The localized "Status • Species" detail string.
+    public var statusAndSpecies: String {
+        "\(status) • \(species)"
+    }
+
+    /// The gender display value used on detail screens: symbol + raw gender.
+    public var detailGender: String {
+        "\(RimGenderSymbol.symbol(for: gender))  \(gender)"
     }
 }
