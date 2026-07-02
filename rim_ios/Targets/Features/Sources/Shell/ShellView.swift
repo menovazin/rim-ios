@@ -96,15 +96,26 @@ public struct ShellView: View {
 
     @ViewBuilder
     private var locationsTab: some View {
-        VStack(spacing: 0) {
-            RimAppBar(
-                title: ShellTab.locations.title,
-                leading: .menu({ store.send(.drawerOpenTapped) })
-            )
+        NavigationStack(
+            path: $store.scope(state: \.locationsPath, action: \.locationsPath)
+        ) {
+            VStack(spacing: 0) {
+                RimAppBar(
+                    title: ShellTab.locations.title,
+                    leading: .menu({ store.send(.drawerOpenTapped) })
+                )
 
-            LocationsView()
+                LocationsView(
+                    store: store.scope(state: \.locations, action: \.locations)
+                )
+            }
+            .toolbar(.hidden, for: .navigationBar)
+        } destination: { store in
+            switch store.case {
+            case .locationDetail(let locationStore):
+                LocationDetailView(store: locationStore)
+            }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Drawer menu

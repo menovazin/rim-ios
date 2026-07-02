@@ -13,6 +13,7 @@ import Networking
 public struct APIClient: Sendable {
     var fetchCharacters: @Sendable (Int) async throws -> PageResult<Character>
     var fetchEpisodes: @Sendable (Int) async throws -> PageResult<Episode>
+    var fetchLocations: @Sendable (Int) async throws -> PageResult<Location>
 }
 
 extension APIClient: DependencyKey {
@@ -26,6 +27,9 @@ extension APIClient: TestDependencyKey {
             PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
         },
         fetchEpisodes: { _ in
+            PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+        },
+        fetchLocations: { _ in
             PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
         }
     )
@@ -53,6 +57,9 @@ extension APIClient {
             },
             fetchEpisodes: { _ in
                 PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchLocations: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
             }
         )
     }
@@ -66,6 +73,25 @@ extension APIClient {
             },
             fetchEpisodes: { _ in
                 iterator.next() ?? PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchLocations: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            }
+        )
+    }
+
+    /// Returns a deterministic test client that serves location `pages` in order.
+    public static func test(locations pages: [PageResult<Location>]) -> APIClient {
+        var iterator = pages.makeIterator()
+        return APIClient(
+            fetchCharacters: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchEpisodes: { _ in
+                PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
+            },
+            fetchLocations: { _ in
+                iterator.next() ?? PageResult(items: [], page: 1, totalPages: 1, hasNext: false)
             }
         )
     }
@@ -74,7 +100,8 @@ extension APIClient {
     public static func failing(with error: Error = URLError(.notConnectedToInternet)) -> APIClient {
         APIClient(
             fetchCharacters: { _ in throw error },
-            fetchEpisodes: { _ in throw error }
+            fetchEpisodes: { _ in throw error },
+            fetchLocations: { _ in throw error }
         )
     }
 
@@ -82,7 +109,17 @@ extension APIClient {
     public static func failingEpisodes(with error: Error = URLError(.notConnectedToInternet)) -> APIClient {
         APIClient(
             fetchCharacters: { _ in throw error },
-            fetchEpisodes: { _ in throw error }
+            fetchEpisodes: { _ in throw error },
+            fetchLocations: { _ in throw error }
+        )
+    }
+
+    /// Returns a test client for locations that always throws the given error.
+    public static func failingLocations(with error: Error = URLError(.notConnectedToInternet)) -> APIClient {
+        APIClient(
+            fetchCharacters: { _ in throw error },
+            fetchEpisodes: { _ in throw error },
+            fetchLocations: { _ in throw error }
         )
     }
 }
@@ -157,6 +194,37 @@ extension APIClient {
                 }
                 return PageResult(
                     items: episodes,
+                    page: page,
+                    totalPages: decoded.info.pages,
+                    hasNext: decoded.info.next != nil
+                )
+            },
+            fetchLocations: { page in
+                let url = baseURL.appendingPathComponent("location")
+                    .appending(queryItems: [URLQueryItem(name: "page", value: "\(page)")])
+                let (data, response) = try await URLSession.shared.data(from: url)
+                guard let http = response as? HTTPURLResponse else {
+                    throw URLError(.badServerResponse)
+                }
+                guard (200..<300).contains(http.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                let decoded = try JSONDecoder().decode(LocationResponseDTO.self, from: data)
+                let locations = decoded.results.map { dto in
+                    Location(
+                        id: dto.id,
+                        name: dto.name,
+                        type: dto.type,
+                        dimension: dto.dimension,
+                        residentIds: dto.residents.compactMap { urlString in
+                            guard let last = URL(string: urlString)?.lastPathComponent,
+                                  let id = Int(last) else { return nil }
+                            return id
+                        }
+                    )
+                }
+                return PageResult(
+                    items: locations,
                     page: page,
                     totalPages: decoded.info.pages,
                     hasNext: decoded.info.next != nil

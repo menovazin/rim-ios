@@ -295,4 +295,110 @@ final class ShellReducerTests: XCTestCase {
             $0.characters.hasNext = false
         }
     }
+
+    // MARK: - Locations detail navigation
+
+    @MainActor
+    func test_locationCardTapped_pushesLocationDetail() async {
+        let location = Location(
+            id: 1, name: "Earth", type: "Planet",
+            dimension: "Dimension C-137",
+            residentIds: [1, 2]
+        )
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.locations(.cardTapped(location))) {
+            $0.locationsPath.append(.locationDetail(LocationDetailReducer.State(location: location)))
+        }
+    }
+
+    @MainActor
+    func test_locationCardTapped_leavesLocationsListStateUnchanged() async {
+        let location = Location(
+            id: 1, name: "Earth", type: "Planet",
+            dimension: "Dimension C-137",
+            residentIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            locations: LocationsReducer.State(
+                items: IdentifiedArray(uniqueElements: [location]),
+                page: 1,
+                hasNext: false
+            )
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.locations(.cardTapped(location))) {
+            $0.locationsPath.append(.locationDetail(LocationDetailReducer.State(location: location)))
+        }
+        XCTAssertEqual(store.state.locations.items.count, 1)
+        XCTAssertEqual(store.state.locations.page, 1)
+        XCTAssertEqual(store.state.locations.hasNext, false)
+    }
+
+    @MainActor
+    func test_switchingTabs_preservesLocationsStack() async {
+        let location = Location(
+            id: 1, name: "Earth", type: "Planet",
+            dimension: "Dimension C-137",
+            residentIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .locations,
+            locationsPath: StackState([
+                .locationDetail(LocationDetailReducer.State(location: location))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.tabSelected(.characters)) {
+            $0.selectedTab = .characters
+            $0.isDrawerOpen = false
+        }
+
+        await store.send(.tabSelected(.locations)) {
+            $0.selectedTab = .locations
+            $0.isDrawerOpen = false
+        }
+
+        XCTAssertEqual(store.state.locationsPath.count, 1)
+    }
+
+    // MARK: - Drawer / locations tab
+
+    @MainActor
+    func test_drawerOpenTapped_opensDrawerForLocationsAtRoot() async {
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .locations
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped) {
+            $0.isDrawerOpen = true
+        }
+    }
+
+    @MainActor
+    func test_drawerOpenTapped_blockedWhenLocationDetailPushed() async {
+        let location = Location(
+            id: 1, name: "Earth", type: "Planet",
+            dimension: "Dimension C-137",
+            residentIds: [1]
+        )
+        let store = TestStore(initialState: ShellReducer.State(
+            selectedTab: .locations,
+            locationsPath: StackState([
+                .locationDetail(LocationDetailReducer.State(location: location))
+            ])
+        )) {
+            ShellReducer()
+        }
+
+        await store.send(.drawerOpenTapped)
+    }
 }

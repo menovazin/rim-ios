@@ -23,6 +23,7 @@ public struct ShellReducer {
         public var episodesPath: StackState<EpisodesPath.State>
 
         public var locations: LocationsReducer.State
+        public var locationsPath: StackState<LocationsPath.State>
 
         public init(
             selectedTab: ShellTab = .characters,
@@ -31,7 +32,8 @@ public struct ShellReducer {
             charactersPath: StackState<CharactersPath.State> = StackState(),
             episodes: EpisodesReducer.State = EpisodesReducer.State(),
             episodesPath: StackState<EpisodesPath.State> = StackState(),
-            locations: LocationsReducer.State = LocationsReducer.State()
+            locations: LocationsReducer.State = LocationsReducer.State(),
+            locationsPath: StackState<LocationsPath.State> = StackState()
         ) {
             self.selectedTab = selectedTab
             self.isDrawerOpen = isDrawerOpen
@@ -40,6 +42,7 @@ public struct ShellReducer {
             self.episodes = episodes
             self.episodesPath = episodesPath
             self.locations = locations
+            self.locationsPath = locationsPath
         }
     }
 
@@ -51,6 +54,11 @@ public struct ShellReducer {
     @Reducer(state: .equatable)
     public enum EpisodesPath {
         case episodeDetail(EpisodeDetailReducer)
+    }
+
+    @Reducer(state: .equatable)
+    public enum LocationsPath {
+        case locationDetail(LocationDetailReducer)
     }
 
     public enum Action {
@@ -67,6 +75,7 @@ public struct ShellReducer {
         case episodes(EpisodesReducer.Action)
         case episodesPath(StackAction<EpisodesPath.State, EpisodesPath.Action>)
         case locations(LocationsReducer.Action)
+        case locationsPath(StackAction<LocationsPath.State, LocationsPath.Action>)
 
         @CasePathable
         public enum Delegate: Equatable {
@@ -107,7 +116,7 @@ public struct ShellReducer {
                 switch state.selectedTab {
                 case .characters where state.charactersPath.isEmpty,
                      .episodes where state.episodesPath.isEmpty,
-                     .locations:
+                     .locations where state.locationsPath.isEmpty:
                     state.isDrawerOpen = true
                 default:
                     break
@@ -145,11 +154,19 @@ public struct ShellReducer {
             case .episodesPath:
                 return .none
 
+            case let .locations(.cardTapped(location)):
+                state.locationsPath.append(.locationDetail(LocationDetailReducer.State(location: location)))
+                return .none
+
             case .locations:
+                return .none
+
+            case .locationsPath:
                 return .none
             }
         }
         .forEach(\.charactersPath, action: \.charactersPath)
         .forEach(\.episodesPath, action: \.episodesPath)
+        .forEach(\.locationsPath, action: \.locationsPath)
     }
 }
