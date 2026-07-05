@@ -39,8 +39,8 @@ public enum RimTypography {
     public static let labelMedium = RimTextStyle(weight: .regular, size: 12, letterSpacing: 1.5)
     public static let labelSmall = RimTextStyle(weight: .semiBold, size: 10, letterSpacing: 1.5)
 
-    /// AppBar title override: 20pt, weight 500.
-    public static let appBarTitle = RimTextStyle(weight: .medium, size: 20)
+    /// AppBar title override: 18pt, weight 700.
+    public static let appBarTitle = RimTextStyle(weight: .bold, size: 18)
     /// TabBar label, selected: 16pt, weight 600.
     public static let tabBarLabelSelected = RimTextStyle(weight: .semiBold, size: 16)
     /// TabBar label, unselected: 16pt, weight 400.

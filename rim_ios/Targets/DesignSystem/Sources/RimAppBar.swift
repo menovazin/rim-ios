@@ -42,7 +42,7 @@ public struct RimAppBar: View {
         }
         .padding(.horizontal, RimSpacing.sm)
         .frame(height: 44)
-        .background(theme.colors.surface)
+        .background(theme.colors.background)
     }
 
     @ViewBuilder
