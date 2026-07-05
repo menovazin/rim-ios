@@ -36,6 +36,7 @@ public struct EpisodesView: View {
     @ViewBuilder
     private var loadingView: some View {
         VStack {
+
             Spacer()
             ProgressView()
                 .tint(theme.colors.primary)

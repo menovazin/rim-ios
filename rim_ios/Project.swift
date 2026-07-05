@@ -46,10 +46,9 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
                 with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
-                    ],
+                    "UILaunchStoryboardName": "LaunchScreen",
+                    "CFBundleDisplayName": "RIM iOS",
+                    "CFBundleName": "RIM iOS",
                 ]
             ),
             sources: ["Targets/App/Sources/**"],
