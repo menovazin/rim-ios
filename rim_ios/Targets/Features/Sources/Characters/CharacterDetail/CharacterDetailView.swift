@@ -2,6 +2,7 @@ import ComposableArchitecture
 import DesignSystem
 import Kingfisher
 import Models
+import Networking
 import SwiftUI
 
 /// Character Detail screen matching `DESIGN_SYSTEM.md §5` and the canonical
@@ -130,7 +131,7 @@ public struct CharacterDetailView: View {
                     character: Character(
                         id: 1, name: "Rick Sanchez", status: "Alive", species: "Human",
                         type: "", gender: "Male",
-                        image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+                        image: "\(ApiConstants.characterEndpoint)/avatar/1.jpeg",
                         originName: "Earth (C-137)", originUrl: "",
                         locationName: "Citadel of Ricks", locationUrl: "",
                         episodeIds: [1, 2, 3, 42]
@@ -152,7 +153,7 @@ public struct CharacterDetailView: View {
                     character: Character(
                         id: 2, name: "Morty Smith", status: "Alive", species: "Human",
                         type: "", gender: "Male",
-                        image: "https://rickandmortyapi.com/api/character/avatar/2.jpeg",
+                        image: "\(ApiConstants.characterEndpoint)/avatar/2.jpeg",
                         originName: "Earth (C-137)", originUrl: "",
                         locationName: "Earth (Replacement Dimension)", locationUrl: "",
                         episodeIds: [1, 2]

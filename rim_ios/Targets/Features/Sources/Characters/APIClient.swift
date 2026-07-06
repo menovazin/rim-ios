@@ -128,7 +128,7 @@ extension APIClient {
 
 extension APIClient {
     public static let live: APIClient = {
-        let baseURL = URL(string: "https://rickandmortyapi.com/api")!
+        let baseURL = URL(string: ApiConstants.baseUrl)!
         return APIClient(
             fetchCharacters: { page in
                 let url = baseURL.appendingPathComponent("character")
@@ -149,7 +149,7 @@ extension APIClient {
                         species: dto.species,
                         type: dto.type,
                         gender: dto.gender,
-                        image: dto.image,
+                        image: RimAvatarURL.fixing(dto.image),
                         originName: dto.origin.name,
                         originUrl: dto.origin.url,
                         locationName: dto.location.name,

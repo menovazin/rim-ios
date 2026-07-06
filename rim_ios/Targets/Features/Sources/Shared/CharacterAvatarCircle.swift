@@ -1,5 +1,6 @@
 import DesignSystem
 import Kingfisher
+import Networking
 import SwiftUI
 
 /// Circular character avatar (48×48) with optional name label below.
@@ -68,15 +69,21 @@ public struct CharacterAvatarCircle: View {
 
 // MARK: - Avatar URL util
 
-/// Derives Rick & Morty avatar image URLs from a character id.
+/// Derives Rick & Morty avatar image URLs.
 ///
-/// Uses the same CDN base as the canonical Flutter `AvatarUrlUtils`:
-/// `https://semester.syazy.com/rickandmorty/<id>.jpeg`.
+/// Mirrors the canonical Flutter `AvatarUrlUtils`:
+/// - `avatarUrlFromId` → `fromId(_:)` — build avatar URL from a character id
+/// - `getCustomAvatarUrl` → `fixing(_:)` — prepend API base to relative URLs
 public enum RimAvatarURL {
-    private static let base = "https://semester.syazy.com/rickandmorty"
-
     /// Returns the avatar URL for the given character id.
     public static func fromId(_ id: Int) -> URL? {
-        URL(string: "\(base)/\(id).jpeg")
+        URL(string: "\(ApiConstants.characterEndpoint)/avatar/\(id).jpeg")
+    }
+
+    /// Fixes a possibly-relative avatar URL returned by the API.
+    /// If `originalUrl` is relative (starts with `/`), prepends `ApiConstants.baseUrl`;
+    /// otherwise returns `originalUrl` unchanged.
+    public static func fixing(_ originalUrl: String) -> String {
+        originalUrl.hasPrefix("/") ? "\(ApiConstants.baseUrl)\(originalUrl)" : originalUrl
     }
 }

@@ -15,7 +15,7 @@ final class CharacterDTODecodingTests: XCTestCase {
         "info": {
             "count": 826,
             "pages": 42,
-            "next": "https://rickandmortyapi.com/api/character?page=2",
+            "next": "https://alpha.syazy.com/api/character?page=2",
             "prev": null
         },
         "results": [
@@ -26,20 +26,20 @@ final class CharacterDTODecodingTests: XCTestCase {
                 "species": "Human",
                 "type": "",
                 "gender": "Male",
-                "image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+                "image": "https://alpha.syazy.com/api/character/avatar/1.jpeg",
                 "origin": {
                     "name": "Earth",
-                    "url": "https://rickandmortyapi.com/api/location/1"
+                    "url": "https://alpha.syazy.com/api/location/1"
                 },
                 "location": {
                     "name": "Earth",
-                    "url": "https://rickandmortyapi.com/api/location/20"
+                    "url": "https://alpha.syazy.com/api/location/20"
                 },
                 "episode": [
-                    "https://rickandmortyapi.com/api/episode/1",
-                    "https://rickandmortyapi.com/api/episode/2"
+                    "https://alpha.syazy.com/api/episode/1",
+                    "https://alpha.syazy.com/api/episode/2"
                 ],
-                "url": "https://rickandmortyapi.com/api/character/1",
+                "url": "https://alpha.syazy.com/api/character/1",
                 "created": "2017-11-04T18:48:46.250Z"
             }
         ]
@@ -50,7 +50,7 @@ final class CharacterDTODecodingTests: XCTestCase {
         let decoded = try JSONDecoder().decode(CharacterResponseDTO.self, from: sampleJSON)
 
         XCTAssertEqual(decoded.info.pages, 42)
-        XCTAssertEqual(decoded.info.next, "https://rickandmortyapi.com/api/character?page=2")
+        XCTAssertEqual(decoded.info.next, "https://alpha.syazy.com/api/character?page=2")
         XCTAssertEqual(decoded.results.count, 1)
 
         let character = decoded.results[0]
@@ -63,7 +63,7 @@ final class CharacterDTODecodingTests: XCTestCase {
         XCTAssertEqual(character.origin.name, "Earth")
         XCTAssertEqual(character.location.name, "Earth")
         XCTAssertEqual(character.episode.count, 2)
-        XCTAssertEqual(character.url, "https://rickandmortyapi.com/api/character/1")
+        XCTAssertEqual(character.url, "https://alpha.syazy.com/api/character/1")
         XCTAssertEqual(character.created, "2017-11-04T18:48:46.250Z")
     }
 

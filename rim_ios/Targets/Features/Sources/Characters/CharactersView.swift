@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import DesignSystem
 import Models
+import Networking
 import SwiftUI
 
 /// Paginated Characters grid matching `characters_page.dart` and `DESIGN_SYSTEM.md §4`.
@@ -131,7 +132,7 @@ public struct CharactersView: View {
         Character(
             id: i, name: "Character \(i)", status: i % 3 == 0 ? "Dead" : "Alive",
             species: "Human", type: "", gender: "Male",
-            image: "https://rickandmortyapi.com/api/character/avatar/\(i).jpeg",
+            image: "\(ApiConstants.characterEndpoint)/avatar/\(i).jpeg",
             originName: "Earth", originUrl: "", locationName: "Earth", locationUrl: "",
             episodeIds: [1]
         )
@@ -153,7 +154,7 @@ public struct CharactersView: View {
         Character(
             id: i, name: "Character \(i)", status: "Alive",
             species: "Human", type: "", gender: "Male",
-            image: "https://rickandmortyapi.com/api/character/avatar/\(i).jpeg",
+            image: "\(ApiConstants.characterEndpoint)/avatar/\(i).jpeg",
             originName: "Earth", originUrl: "", locationName: "Earth", locationUrl: "",
             episodeIds: [1]
         )
