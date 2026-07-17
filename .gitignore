@@ -1,6 +1,7 @@
 .agents/
 .cline/
 .clinerules/
+.cursor/
 .github/
 .opencode/
 openspec/
@@ -10,3 +11,4 @@ docs/
 STARTER.md
 CONTEXT.md
 howto.md
+skills-lock.json
