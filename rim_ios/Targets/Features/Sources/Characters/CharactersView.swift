@@ -74,8 +74,12 @@ public struct CharactersView: View {
             ScrollView {
                 LazyVGrid(columns: gridItems, spacing: RimSpacing.lg) {
                     ForEach(store.items) { character in
+                        // Per-tile inset keeps visual gaps readable with LazyVGrid.
+                        // Grid spacing is already 12 (Flutter main/crossAxisSpacing);
+                        // 4pt each side was the pre-parity layout — do not drop it.
                         CharacterCard(character: character)
                             .aspectRatio(0.72, contentMode: .fit)
+                            .padding(4)
                             .onTapGesture {
                                 store.send(.cardTapped(character))
                             }
