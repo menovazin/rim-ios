@@ -51,7 +51,7 @@ public struct CharactersReducer {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.items.isEmpty else { return .none }
+                guard state.items.isEmpty, !state.isLoadingInitial else { return .none }
                 return .send(.loadInitial)
 
             case .loadInitial:
@@ -75,7 +75,7 @@ public struct CharactersReducer {
                 state.hasNext = result.hasNext
                 return .none
 
-            case let .loadInitialResponse(.failure):
+            case .loadInitialResponse(.failure):
                 state.isLoadingInitial = false
                 state.loadFailed = true
                 return .none
@@ -103,7 +103,7 @@ public struct CharactersReducer {
                 state.hasNext = result.hasNext
                 return .none
 
-            case let .loadMoreResponse(.failure):
+            case .loadMoreResponse(.failure):
                 state.isLoadingMore = false
                 state.loadMoreFailed = true
                 return .none

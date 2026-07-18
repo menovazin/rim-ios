@@ -68,33 +68,6 @@ final class ShellReducerTests: XCTestCase {
         }
     }
 
-    // MARK: - Theme toggle
-
-    @MainActor
-    func test_themeToggleTapped_flipsAndPersistsScheme() async {
-        let themeStore = ThemeStore.test(scheme: .dark)
-        let store = TestStore(initialState: ShellReducer.State()) {
-            ShellReducer()
-        } withDependencies: {
-            $0.themeStore = themeStore
-        }
-
-        await store.send(.themeToggleTapped)
-        XCTAssertEqual(themeStore.load(), .light)
-    }
-
-    @MainActor
-    func test_themeToggleTapped_flipsLightToDark() async {
-        let themeStore = ThemeStore.test(scheme: .light)
-        let store = TestStore(initialState: ShellReducer.State()) {
-            ShellReducer()
-        } withDependencies: {
-            $0.themeStore = themeStore
-        }
-
-        await store.send(.themeToggleTapped)
-        XCTAssertEqual(themeStore.load(), .dark)
-    }
 
     // MARK: - Sign Out
 

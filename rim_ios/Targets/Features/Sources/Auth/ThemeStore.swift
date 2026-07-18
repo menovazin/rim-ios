@@ -15,6 +15,10 @@ public struct ThemeStore: Sendable {
     var save: @Sendable (RimColorScheme) -> Void
 }
 
+extension ThemeStore: DependencyKey {
+    public static let liveValue = ThemeStore.live
+}
+
 extension ThemeStore: TestDependencyKey {
     /// Default test value traps on use, surfacing missing wiring in tests.
     public static let testValue = ThemeStore()

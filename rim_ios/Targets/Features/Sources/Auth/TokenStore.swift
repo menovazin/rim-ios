@@ -12,6 +12,10 @@ public struct TokenStore: Sendable {
     var clearToken: @Sendable () async -> Void
 }
 
+extension TokenStore: DependencyKey {
+    public static let liveValue = TokenStore.live
+}
+
 extension TokenStore: TestDependencyKey {
     /// Default test value traps on use, surfacing missing wiring in tests.
     public static let testValue = TokenStore()

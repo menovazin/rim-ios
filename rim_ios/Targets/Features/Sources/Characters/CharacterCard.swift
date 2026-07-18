@@ -15,26 +15,26 @@ struct CharacterCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Cover image — expands to fill remaining card height (Flutter Expanded)
-            KFImage(URL(string: character.image))
-                .placeholder {
-                    ZStack {
-                        theme.colors.background
-                        ProgressView()
-                            .tint(theme.colors.primary)
-                            .scaleEffect(1.2)
-                    }
-                }
-                .onFailureView {
-                    ZStack {
-                        theme.colors.background
-                        // Flutter: Icons.broken_image, textSecondary
-                        RimIcon(.brokenImage, size: 32, color: theme.colors.textSecondary)
-                    }
-                }
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
+           KFImage(URL(string: character.image))
+               .placeholder {
+                   ZStack {
+                       theme.colors.background
+                       ProgressView()
+                           .tint(theme.colors.primary)
+                           .scaleEffect(1.2)
+                   }
+               }
+               .onFailureView {
+                   ZStack {
+                       theme.colors.background
+                       // Flutter: Icons.broken_image, textSecondary
+                       RimIcon(.brokenImage, size: 32, color: theme.colors.textSecondary)
+                   }
+               }
+               .resizable()
+               .aspectRatio(contentMode: .fill)
+               .frame(maxWidth: .infinity, maxHeight: .infinity)
+               .clipped()
 
             // Text block — fromLTRB(10, 8, 10, 10)
             VStack(alignment: .leading, spacing: RimSpacing.xxs) {

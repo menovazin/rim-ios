@@ -6,6 +6,7 @@ public struct ShellView: View {
     @Bindable var store: StoreOf<ShellReducer>
     @Environment(\.rimTheme) private var theme
     @Environment(RimThemeController.self) private var themeController
+    @State private var mountedTabs: Set<ShellTab> = [.characters]
 
     public init(store: StoreOf<ShellReducer>) {
         self.store = store
@@ -22,21 +23,36 @@ public struct ShellView: View {
         } content: {
             activeTabView
         }
+        .onChange(of: store.selectedTab) { _, tab in
+            mountedTabs.insert(tab)
+        }
     }
 
-    // MARK: - Active tab
+    // MARK: - Active tab (keep-alive)
 
     @ViewBuilder
     private var activeTabView: some View {
-        switch store.selectedTab {
-        case .characters:
-            charactersTab
+        ZStack {
+            if mountedTabs.contains(.characters) {
+                charactersTab
+                    .opacity(store.selectedTab == .characters ? 1 : 0)
+                    .allowsHitTesting(store.selectedTab == .characters)
+                    .accessibilityHidden(store.selectedTab != .characters)
+            }
 
-        case .episodes:
-            episodesTab
+            if mountedTabs.contains(.episodes) {
+                episodesTab
+                    .opacity(store.selectedTab == .episodes ? 1 : 0)
+                    .allowsHitTesting(store.selectedTab == .episodes)
+                    .accessibilityHidden(store.selectedTab != .episodes)
+            }
 
-        case .locations:
-            locationsTab
+            if mountedTabs.contains(.locations) {
+                locationsTab
+                    .opacity(store.selectedTab == .locations ? 1 : 0)
+                    .allowsHitTesting(store.selectedTab == .locations)
+                    .accessibilityHidden(store.selectedTab != .locations)
+            }
         }
     }
 
@@ -168,7 +184,6 @@ public struct ShellView: View {
 
             Button {
                 themeController.toggle()
-                store.send(.themeToggleTapped)
             } label: {
                 // Flutter: light_mode_outlined when dark (switch to light), else dark_mode_outlined
                 RimIcon(

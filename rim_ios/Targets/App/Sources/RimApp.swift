@@ -3,13 +3,15 @@ import Features
 import SwiftUI
 
 private struct LiveThemePersistence: RimThemePersistence {
+    private static let key = "theme"
+
     func load() -> RimColorScheme? {
-        guard let raw = UserDefaults.standard.string(forKey: "theme") else { return nil }
+        guard let raw = UserDefaults.standard.string(forKey: Self.key) else { return nil }
         return RimColorScheme(rawValue: raw)
     }
 
     func save(_ scheme: RimColorScheme) {
-        UserDefaults.standard.set(scheme.rawValue, forKey: "theme")
+        UserDefaults.standard.set(scheme.rawValue, forKey: Self.key)
     }
 }
 

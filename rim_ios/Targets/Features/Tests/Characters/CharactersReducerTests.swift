@@ -66,6 +66,17 @@ final class CharactersReducerTests: XCTestCase {
     }
 
     @MainActor
+    func test_onAppear_whileLoadingInitial_doesNotResendLoadInitial() async {
+        let store = TestStore(
+            initialState: CharactersReducer.State(isLoadingInitial: true)
+        ) {
+            CharactersReducer()
+        }
+
+        await store.send(.onAppear)
+    }
+
+    @MainActor
     func test_initialLoadFailure_setsLoadFailed() async {
         let store = TestStore(initialState: CharactersReducer.State()) {
             CharactersReducer()

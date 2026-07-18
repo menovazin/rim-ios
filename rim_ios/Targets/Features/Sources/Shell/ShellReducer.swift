@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import DesignSystem
 import Foundation
 
 /// The primary tabs inside the signed-in Shell.
@@ -66,7 +65,6 @@ public struct ShellReducer {
         case tabSelected(ShellTab)
         case setDrawerOpen(Bool)
         case drawerOpenTapped
-        case themeToggleTapped
         case signOutTapped
         case delegate(Delegate)
 
@@ -82,8 +80,6 @@ public struct ShellReducer {
             case logout
         }
     }
-
-    @Dependency(\.themeStore) var themeStore
 
     public init() {}
 
@@ -121,11 +117,6 @@ public struct ShellReducer {
                 default:
                     break
                 }
-                return .none
-
-            case .themeToggleTapped:
-                let newScheme: RimColorScheme = (themeStore.load() ?? .dark) == .dark ? .light : .dark
-                themeStore.save(newScheme)
                 return .none
 
             case .signOutTapped:

@@ -5,7 +5,7 @@ import Foundation
 ///
 /// Single source of truth for the API host and derived URLs/endpoints.
 public enum ApiConstants {
-    public static let host = "alpha.syazy.com"
+    public static let host = "alpha.syazy.com:1180"
     public static let baseUrl = "https://\(host)/api"
 
     public static let characterEndpoint = "\(baseUrl)/character"

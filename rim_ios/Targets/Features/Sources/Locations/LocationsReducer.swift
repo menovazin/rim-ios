@@ -54,7 +54,7 @@ public struct LocationsReducer {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.items.isEmpty else { return .none }
+                guard state.items.isEmpty, !state.isLoadingInitial else { return .none }
                 return .send(.loadInitial)
 
             case .loadInitial:
