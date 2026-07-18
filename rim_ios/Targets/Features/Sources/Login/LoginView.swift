@@ -19,10 +19,8 @@ public struct LoginView: View {
                 VStack(spacing: RimSpacing.jumbo) {
                     Spacer(minLength: RimSpacing.jumbo * 2)
 
-                    // Science icon — 72pt
-                    Image(systemName: "flask")
-                        .font(.system(size: 72))
-                        .foregroundStyle(theme.colors.primary)
+                    // Flutter login_page: Icons.science_outlined size 72
+                    RimIcon(.scienceOutlined, size: 72, color: theme.colors.primary)
 
                     // Title
                     Text("Rick & Morty")
@@ -35,10 +33,9 @@ public struct LoginView: View {
                         .rimTextStyle(RimTypography.bodyMedium)
                         .foregroundStyle(theme.colors.textSecondary)
 
-                    // Name field
+                    // Name field — Icons.person_outline
                     HStack(spacing: RimSpacing.sm) {
-                        Image(systemName: "person")
-                            .foregroundStyle(theme.colors.textSecondary)
+                        RimIcon(.personOutline, size: 24, color: theme.colors.textSecondary)
                         TextField("Enter your name", text: $store.name)
                             .rimTextStyle(RimTypography.bodyLarge)
                             .frame(height: 30)

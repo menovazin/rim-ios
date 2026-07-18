@@ -17,6 +17,10 @@ private struct LiveThemePersistence: RimThemePersistence {
 struct RimApp: App {
     @State private var themeController = RimThemeController(persistence: LiveThemePersistence())
 
+    init() {
+        RimFonts.registerIfNeeded()
+    }
+
     var body: some Scene {
         WindowGroup {
             RimRootView()

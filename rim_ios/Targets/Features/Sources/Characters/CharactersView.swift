@@ -47,23 +47,14 @@ public struct CharactersView: View {
         }
     }
 
-    // MARK: - Error (full-screen)
+    // MARK: - Error (full-screen) — Flutter GridErrorTile + padding 24
 
     @ViewBuilder
     private var errorView: some View {
         VStack {
             Spacer()
-            Button {
-                store.send(.retry)
-            } label: {
-                VStack(spacing: RimSpacing.sm) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.title2)
-                    Text("Retry")
-                        .rimTextStyle(RimTypography.labelLarge)
-                }
-                .foregroundStyle(theme.colors.primary)
-            }
+            RimGridErrorTile(onRetry: { store.send(.retry) })
+                .padding(RimSpacing.huge)
             Spacer()
         }
     }
@@ -85,31 +76,20 @@ public struct CharactersView: View {
                     ForEach(store.items) { character in
                         CharacterCard(character: character)
                             .aspectRatio(0.72, contentMode: .fit)
-                            .padding(_: 4)
                             .onTapGesture {
                                 store.send(.cardTapped(character))
                             }
                     }
 
-                    // Pagination footer (matches Flutter: loading 20pt vertical, error 16pt all)
+                    // Pagination footer (Flutter: loading V20, error GridErrorTile pad 16)
                     if store.isLoadingMore {
                         ProgressView()
                             .tint(theme.colors.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, RimSpacing.xxxl)
                     } else if store.loadMoreFailed {
-                        Button {
-                            store.send(.retry)
-                        } label: {
-                            VStack(spacing: RimSpacing.xxs) {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Retry")
-                                    .rimTextStyle(RimTypography.labelMedium)
-                            }
-                            .foregroundStyle(theme.colors.primary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(RimSpacing.xxl)
+                        RimGridErrorTile(onRetry: { store.send(.retry) })
+                            .padding(RimSpacing.xxl)
                     }
 
                     // Sentinel for infinite scroll (300pt threshold)

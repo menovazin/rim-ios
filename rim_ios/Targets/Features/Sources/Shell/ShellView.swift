@@ -140,7 +140,7 @@ public struct ShellView: View {
                     .padding(.horizontal, RimSpacing.xxl)
 
                 RimDrawerSectionItem(
-                    icon: "rectangle.portrait.and.arrow.right",
+                    icon: .logout,
                     title: "Sign Out",
                     isSelected: false,
                     action: { store.send(.signOutTapped) }
@@ -153,10 +153,8 @@ public struct ShellView: View {
     @ViewBuilder
     private var drawerHeader: some View {
         HStack(spacing: 0) {
-            Image(systemName: "atom")
-                .font(.system(size: 24))
-                .foregroundStyle(theme.colors.primary)
-                .frame(width: 24, height: 24)
+            // Flutter shell: Icons.science_outlined, primary
+            RimIcon(.scienceOutlined, size: 24, color: theme.colors.primary)
 
             Spacer()
                 .frame(width: 12)
@@ -172,10 +170,13 @@ public struct ShellView: View {
                 themeController.toggle()
                 store.send(.themeToggleTapped)
             } label: {
-                Image(systemName: themeController.scheme == .dark ? "sun.max" : "moon")
-                    .font(.system(size: 24))
-                    .foregroundStyle(theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
+                // Flutter: light_mode_outlined when dark (switch to light), else dark_mode_outlined
+                RimIcon(
+                    themeController.scheme == .dark ? .lightModeOutlined : .darkModeOutlined,
+                    size: 24,
+                    color: theme.colors.textPrimary
+                )
+                .frame(width: 40, height: 40)
             }
         }
         .padding(EdgeInsets(top: RimSpacing.xxl, leading: RimSpacing.xxl, bottom: RimSpacing.xl, trailing: RimSpacing.xxl))
@@ -185,19 +186,19 @@ public struct ShellView: View {
     private var drawerSectionItems: some View {
         VStack(spacing: 0) {
             RimDrawerSectionItem(
-                icon: "person.2",
+                icon: .peopleAltOutlined,
                 title: "Characters",
                 isSelected: store.selectedTab == .characters,
                 action: { store.send(.tabSelected(.characters)) }
             )
             RimDrawerSectionItem(
-                icon: "film",
+                icon: .movieOutlined,
                 title: "Episodes",
                 isSelected: store.selectedTab == .episodes,
                 action: { store.send(.tabSelected(.episodes)) }
             )
             RimDrawerSectionItem(
-                icon: "globe",
+                icon: .publicOutlined,
                 title: "Locations",
                 isSelected: store.selectedTab == .locations,
                 action: { store.send(.tabSelected(.locations)) }

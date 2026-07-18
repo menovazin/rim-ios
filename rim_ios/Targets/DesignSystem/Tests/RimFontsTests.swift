@@ -11,4 +11,11 @@ final class RimFontsTests: XCTestCase {
             )
         }
     }
+
+    func test_materialIconsFont_isRegistered() {
+        XCTAssertTrue(
+            RimFonts.isMaterialIconsRegistered,
+            "MaterialIcons-Regular should be registered alongside Nunito"
+        )
+    }
 }

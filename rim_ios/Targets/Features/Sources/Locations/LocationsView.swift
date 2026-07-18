@@ -43,23 +43,14 @@ public struct LocationsView: View {
         }
     }
 
-    // MARK: - Error (full-screen)
+    // MARK: - Error (full-screen) — Flutter GridErrorTile + padding 24
 
     @ViewBuilder
     private var errorView: some View {
         VStack {
             Spacer()
-            Button {
-                store.send(.retry)
-            } label: {
-                VStack(spacing: RimSpacing.sm) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.title2)
-                    Text("Retry")
-                        .rimTextStyle(RimTypography.labelLarge)
-                }
-                .foregroundStyle(theme.colors.primary)
-            }
+            RimGridErrorTile(onRetry: { store.send(.retry) })
+                .padding(RimSpacing.huge)
             Spacer()
         }
     }
@@ -84,18 +75,8 @@ public struct LocationsView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, RimSpacing.xxxl)
                 } else if store.loadMoreFailed {
-                    Button {
-                        store.send(.retry)
-                    } label: {
-                        VStack(spacing: RimSpacing.xxs) {
-                            Image(systemName: "arrow.clockwise")
-                            Text("Retry")
-                                .rimTextStyle(RimTypography.labelMedium)
-                        }
-                        .foregroundStyle(theme.colors.primary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(RimSpacing.xxl)
+                    RimGridErrorTile(onRetry: { store.send(.retry) })
+                        .padding(RimSpacing.xxl)
                 }
 
                 // Sentinel for infinite scroll (300pt threshold)
@@ -115,22 +96,24 @@ public struct LocationsView: View {
 /// A single location row matching Flutter `_LocationTile`.
 ///
 /// `RoundedRectangle(cornerRadius: 12)` `surface` fill, leading 48pt
-/// `CircleAvatar` (`secondary @ 18%`) with type SF Symbol (`secondary`),
-/// title + subtitle, trailing chevron.
+/// circle (`secondary @ 18%`) with Material type icon (`secondary`),
+/// title + subtitle, trailing `chevron_right`.
 struct LocationTile: View {
     let location: Location
     @Environment(\.rimTheme) private var theme
 
     var body: some View {
         HStack(spacing: RimSpacing.lg) {
-            // Leading icon circle
+            // Leading icon circle — Material Icons via location_type_x mapping
             Circle()
                 .fill(theme.colors.secondary.opacity(0.18))
                 .frame(width: 48, height: 48)
                 .overlay(
-                    Image(systemName: LocationTypeIcon.sfSymbol(for: location.type))
-                        .font(.system(size: 20))
-                        .foregroundStyle(theme.colors.secondary)
+                    RimIcon(
+                        RimIconName.locationType(location.type),
+                        size: 20,
+                        color: theme.colors.secondary
+                    )
                 )
 
             // Text column
@@ -151,10 +134,7 @@ struct LocationTile: View {
 
             Spacer()
 
-            // Trailing chevron
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(theme.colors.textSecondary)
+            RimIcon(.chevronRight, size: 24, color: theme.colors.textSecondary)
         }
         .padding(.horizontal, RimSpacing.xxl)
         .padding(.vertical, RimSpacing.xl)

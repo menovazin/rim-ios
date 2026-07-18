@@ -4,13 +4,13 @@ import SwiftUI
 ///
 /// Follows the Flutter `_MenuItem` specs:
 /// - 12pt horizontal / 4pt vertical margin
-/// - 12pt horizontal / 14pt vertical padding
+/// - 14pt horizontal / 14pt vertical padding
 /// - 22pt icon + 14pt gap
 /// - selected: `primary @ 12%` background, 10pt radius, `primary` icon,
 ///   `textPrimary` w700 text in `titleSmall`
 /// - unselected: `textSecondary` w500 text in `titleSmall`
 public struct RimDrawerSectionItem: View {
-    let icon: String
+    let icon: RimIconName
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -18,7 +18,7 @@ public struct RimDrawerSectionItem: View {
     @Environment(\.rimTheme) private var theme
 
     public init(
-        icon: String,
+        icon: RimIconName,
         title: String,
         isSelected: Bool,
         action: @escaping () -> Void
@@ -32,17 +32,21 @@ public struct RimDrawerSectionItem: View {
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .frame(width: 22, height: 22)
+                RimIcon(
+                    icon,
+                    size: 22,
+                    color: isSelected ? theme.colors.primary : theme.colors.textSecondary
+                )
 
                 Text(title)
                     .rimTextStyle(RimTypography.titleSmall)
                     .fontWeight(isSelected ? .bold : .medium)
+                    .foregroundStyle(
+                        isSelected ? theme.colors.textPrimary : theme.colors.textSecondary
+                    )
 
                 Spacer()
             }
-            .foregroundStyle(isSelected ? theme.colors.primary : theme.colors.textSecondary)
             .padding(.horizontal, RimSpacing.xl)
             .padding(.vertical, RimSpacing.xl)
             .background(
@@ -61,13 +65,13 @@ public struct RimDrawerSectionItem: View {
 #Preview("Selected") {
     VStack {
         RimDrawerSectionItem(
-            icon: "person.2",
+            icon: .peopleAltOutlined,
             title: "Characters",
             isSelected: true,
             action: {}
         )
         RimDrawerSectionItem(
-            icon: "film",
+            icon: .movieOutlined,
             title: "Episodes",
             isSelected: false,
             action: {}
@@ -80,13 +84,13 @@ public struct RimDrawerSectionItem: View {
 #Preview("Unselected") {
     VStack {
         RimDrawerSectionItem(
-            icon: "person.2",
+            icon: .peopleAltOutlined,
             title: "Characters",
             isSelected: false,
             action: {}
         )
         RimDrawerSectionItem(
-            icon: "film",
+            icon: .movieOutlined,
             title: "Episodes",
             isSelected: true,
             action: {}

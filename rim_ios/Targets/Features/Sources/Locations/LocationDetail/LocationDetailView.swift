@@ -47,11 +47,13 @@ public struct LocationDetailView: View {
         let dim = store.location.dimension.isEmpty ? "Unknown" : store.location.dimension
 
         VStack(alignment: .leading, spacing: 0) {
-            // Type icon (40pt, secondary color)
-            Image(systemName: LocationTypeIcon.sfSymbol(for: store.location.type))
-                .font(.system(size: 40))
-                .foregroundStyle(theme.colors.secondary)
-                .padding(.top, RimSpacing.xxs)
+            // Type icon — Material Icons (Flutter location detail)
+            RimIcon(
+                RimIconName.locationType(store.location.type),
+                size: 40,
+                color: theme.colors.secondary
+            )
+            .padding(.top, RimSpacing.xxs)
 
             // Name
             Text(store.location.name)

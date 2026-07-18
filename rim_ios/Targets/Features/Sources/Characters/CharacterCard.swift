@@ -14,7 +14,7 @@ struct CharacterCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Cover image — expands to fill remaining card height (Flutter Expanded / Android weight(1f))
+            // Cover image — expands to fill remaining card height (Flutter Expanded)
             KFImage(URL(string: character.image))
                 .placeholder {
                     ZStack {
@@ -24,7 +24,13 @@ struct CharacterCard: View {
                             .scaleEffect(1.2)
                     }
                 }
-                .onFailure { _ in }
+                .onFailureView {
+                    ZStack {
+                        theme.colors.background
+                        // Flutter: Icons.broken_image, textSecondary
+                        RimIcon(.brokenImage, size: 32, color: theme.colors.textSecondary)
+                    }
+                }
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

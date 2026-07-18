@@ -44,23 +44,14 @@ public struct EpisodesView: View {
         }
     }
 
-    // MARK: - Error (full-screen)
+    // MARK: - Error (full-screen) — Flutter GridErrorTile + padding 24
 
     @ViewBuilder
     private var errorView: some View {
         VStack {
             Spacer()
-            Button {
-                store.send(.retry)
-            } label: {
-                VStack(spacing: RimSpacing.sm) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.title2)
-                    Text("Retry")
-                        .rimTextStyle(RimTypography.labelLarge)
-                }
-                .foregroundStyle(theme.colors.primary)
-            }
+            RimGridErrorTile(onRetry: { store.send(.retry) })
+                .padding(RimSpacing.huge)
             Spacer()
         }
     }
@@ -85,18 +76,8 @@ public struct EpisodesView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, RimSpacing.xxxl)
                 } else if store.loadMoreFailed {
-                    Button {
-                        store.send(.retry)
-                    } label: {
-                        VStack(spacing: RimSpacing.xxs) {
-                            Image(systemName: "arrow.clockwise")
-                            Text("Retry")
-                                .rimTextStyle(RimTypography.labelMedium)
-                        }
-                        .foregroundStyle(theme.colors.primary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(RimSpacing.xxl)
+                    RimGridErrorTile(onRetry: { store.send(.retry) })
+                        .padding(RimSpacing.xxl)
                 }
 
                 // Sentinel for infinite scroll (300pt threshold)
@@ -143,10 +124,8 @@ struct EpisodeTile: View {
 
             Spacer()
 
-            // Trailing chevron
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(theme.colors.textSecondary)
+            // Flutter: Icons.chevron_right
+            RimIcon(.chevronRight, size: 24, color: theme.colors.textSecondary)
         }
         .padding(.horizontal, RimSpacing.xxl)
         .padding(.vertical, RimSpacing.xl)

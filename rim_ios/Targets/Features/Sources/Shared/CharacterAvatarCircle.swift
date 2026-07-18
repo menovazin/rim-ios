@@ -56,13 +56,9 @@ public struct CharacterAvatarCircle: View {
                 Circle().fill(theme.colors.surface)
             )
             .overlay(
-                Group {
-                    // Error fallback shown when KFImage fails
-                    Image(systemName: "person")
-                        .font(.system(size: 24))
-                        .foregroundStyle(theme.colors.textSecondary)
-                }
-                .opacity(0) // KF handles this via .onFailure; kept for parity
+                // Flutter avatar fallback: Icons.person size 24
+                RimIcon(.person, size: 24, color: theme.colors.textSecondary)
+                    .opacity(0) // KF handles failure; kept for parity reference
             )
     }
 }

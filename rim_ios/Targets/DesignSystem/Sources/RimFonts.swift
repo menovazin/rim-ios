@@ -1,5 +1,6 @@
 import CoreText
 import Foundation
+import SwiftUI
 
 /// Nunito font weights bundled with `DesignSystem`.
 ///
@@ -19,12 +20,15 @@ public enum RimFontWeight: String, CaseIterable, Sendable {
     public var postScriptName: String { rawValue }
 }
 
-/// Registers the bundled Nunito fonts with Core Text.
+/// Registers the bundled Nunito + Material Icons fonts with Core Text.
 ///
 /// Fonts shipped as resources of a framework/module bundle are **not**
 /// auto-registered by the app's `Info.plist` `UIAppFonts`, so `DesignSystem`
 /// registers them programmatically. Registration is idempotent and runs once.
 public enum RimFonts {
+    /// PostScript name of the vendored Material Icons font (Flutter-compatible).
+    public static let materialIconsPostScriptName = "MaterialIcons-Regular"
+
     private static let registerOnce: Void = {
         for weight in RimFontWeight.allCases {
             guard let url = Bundle.designSystem.url(
@@ -35,9 +39,15 @@ public enum RimFonts {
             }
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
+        if let materialURL = Bundle.designSystem.url(
+            forResource: "MaterialIcons-Regular",
+            withExtension: "otf"
+        ) {
+            CTFontManagerRegisterFontsForURL(materialURL as CFURL, .process, nil)
+        }
     }()
 
-    /// Ensures the Nunito fonts are registered. Safe to call repeatedly.
+    /// Ensures the Nunito and Material Icons fonts are registered. Safe to call repeatedly.
     public static func registerIfNeeded() {
         _ = registerOnce
     }
@@ -52,5 +62,19 @@ public enum RimFonts {
         let font = CTFontCreateWithName(weight.postScriptName as CFString, 12, nil)
         let resolvedName = CTFontCopyPostScriptName(font) as String
         return resolvedName == weight.postScriptName
+    }
+
+    /// Whether the Material Icons font is registered and resolvable.
+    public static var isMaterialIconsRegistered: Bool {
+        registerIfNeeded()
+        let font = CTFontCreateWithName(materialIconsPostScriptName as CFString, 12, nil)
+        let resolvedName = CTFontCopyPostScriptName(font) as String
+        return resolvedName == materialIconsPostScriptName
+    }
+
+    /// Fixed-size Material Icons face (no Dynamic Type).
+    public static func materialIcons(size: CGFloat) -> Font {
+        registerIfNeeded()
+        return .custom(materialIconsPostScriptName, fixedSize: size)
     }
 }
