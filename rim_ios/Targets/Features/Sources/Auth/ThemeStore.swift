@@ -7,8 +7,8 @@ import Foundation
 /// Persists the active `RimColorScheme` (`UserDefaults` key `"theme"`).
 ///
 /// Mirrors the canonical Flutter `ThemeService` which saves the active theme
-/// in `SharedPreferences` under key `"theme"`. This is intentionally separate
-/// from `RimThemeController` so persistence can be mocked in tests.
+/// in `SharedPreferences` under key `"theme"`. Sole live client for product
+/// theme preference (owned by `AppRoot` state).
 @DependencyClient
 public struct ThemeStore: Sendable {
     var load: @Sendable () -> RimColorScheme?

@@ -93,6 +93,18 @@ final class ShellReducerTests: XCTestCase {
         await store.receive(\.delegate.logout)
     }
 
+    // MARK: - Theme toggle
+
+    @MainActor
+    func test_themeToggleTapped_delegatesToParent() async {
+        let store = TestStore(initialState: ShellReducer.State()) {
+            ShellReducer()
+        }
+
+        await store.send(.themeToggleTapped)
+        await store.receive(\.delegate.themeToggleTapped)
+    }
+
     // MARK: - Per-tab stack preservation
 
     @MainActor

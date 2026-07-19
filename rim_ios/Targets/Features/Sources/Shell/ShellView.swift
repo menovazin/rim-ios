@@ -5,7 +5,6 @@ import SwiftUI
 public struct ShellView: View {
     @Bindable var store: StoreOf<ShellReducer>
     @Environment(\.rimTheme) private var theme
-    @Environment(RimThemeController.self) private var themeController
     @State private var mountedTabs: Set<ShellTab> = [.characters]
 
     public init(store: StoreOf<ShellReducer>) {
@@ -183,11 +182,11 @@ public struct ShellView: View {
             Spacer()
 
             Button {
-                themeController.toggle()
+                store.send(.themeToggleTapped)
             } label: {
                 // Flutter: light_mode_outlined when dark (switch to light), else dark_mode_outlined
                 RimIcon(
-                    themeController.scheme == .dark ? .lightModeOutlined : .darkModeOutlined,
+                    theme.scheme == .dark ? .lightModeOutlined : .darkModeOutlined,
                     size: 24,
                     color: theme.colors.textPrimary
                 )
@@ -244,7 +243,6 @@ extension ShellTab {
         }
     )
     .rimTheme(RimTheme(scheme: .dark))
-    .environment(RimThemeController(scheme: .dark))
 }
 
 #Preview("Light") {
@@ -254,5 +252,4 @@ extension ShellTab {
         }
     )
     .rimTheme(RimTheme(scheme: .light))
-    .environment(RimThemeController(scheme: .light))
 }

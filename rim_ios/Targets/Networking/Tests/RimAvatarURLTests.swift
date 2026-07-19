@@ -1,6 +1,5 @@
-import Networking
 import XCTest
-@testable import Features
+@testable import Networking
 
 final class RimAvatarURLTests: XCTestCase {
     func test_fixing_prependsApiBase_forRelativePath() {

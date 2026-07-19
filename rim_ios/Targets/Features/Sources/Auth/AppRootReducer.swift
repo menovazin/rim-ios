@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import DesignSystem
 
 @Reducer
 public enum AppRootDestination {
@@ -15,10 +16,17 @@ public struct AppRoot {
         @Presents public var destination: AppRootDestination.State?
         /// Guards against redundant routing on repeated `onAppear` calls.
         public var hasAppeared: Bool = false
+        /// Product theme preference (persisted via `ThemeStore`, key `"theme"`).
+        public var colorScheme: RimColorScheme = .dark
 
-        public init(destination: AppRootDestination.State? = nil, hasAppeared: Bool = false) {
+        public init(
+            destination: AppRootDestination.State? = nil,
+            hasAppeared: Bool = false,
+            colorScheme: RimColorScheme = .dark
+        ) {
             self.destination = destination
             self.hasAppeared = hasAppeared
+            self.colorScheme = colorScheme
         }
     }
 
@@ -29,6 +37,7 @@ public struct AppRoot {
     }
 
     @Dependency(\.tokenStore) var tokenStore
+    @Dependency(\.themeStore) var themeStore
 
     public init() {}
 
@@ -38,6 +47,7 @@ public struct AppRoot {
             case .onAppear:
                 if state.hasAppeared { return .none }
                 state.hasAppeared = true
+                state.colorScheme = themeStore.load() ?? .dark
 
                 return .run { send in
                     let token = await tokenStore.getToken()
@@ -62,6 +72,12 @@ public struct AppRoot {
                     await tokenStore.clearToken()
                     await send(.routeResolved(.login(LoginReducer.State())))
                 }
+
+            case .destination(.presented(.shell(.delegate(.themeToggleTapped)))):
+                let next: RimColorScheme = state.colorScheme == .dark ? .light : .dark
+                state.colorScheme = next
+                themeStore.save(next)
+                return .none
 
             case .destination:
                 return .none

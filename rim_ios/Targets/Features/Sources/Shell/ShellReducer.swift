@@ -66,6 +66,7 @@ public struct ShellReducer {
         case setDrawerOpen(Bool)
         case drawerOpenTapped
         case signOutTapped
+        case themeToggleTapped
         case delegate(Delegate)
 
         case characters(CharactersReducer.Action)
@@ -78,6 +79,7 @@ public struct ShellReducer {
         @CasePathable
         public enum Delegate: Equatable {
             case logout
+            case themeToggleTapped
         }
     }
 
@@ -121,6 +123,9 @@ public struct ShellReducer {
 
             case .signOutTapped:
                 return .send(.delegate(.logout))
+
+            case .themeToggleTapped:
+                return .send(.delegate(.themeToggleTapped))
 
             case .delegate:
                 return .none

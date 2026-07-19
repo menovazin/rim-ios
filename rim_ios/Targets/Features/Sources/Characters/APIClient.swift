@@ -124,112 +124,18 @@ extension APIClient {
     }
 }
 
-// MARK: - Live implementation
+// MARK: - Live implementation (delegates to Networking)
 
 extension APIClient {
-    public static let live: APIClient = {
-        let baseURL = URL(string: ApiConstants.baseUrl)!
-        return APIClient(
-            fetchCharacters: { page in
-                let url = baseURL.appendingPathComponent("character")
-                    .appending(queryItems: [URLQueryItem(name: "page", value: "\(page)")])
-                let (data, response) = try await URLSession.shared.data(from: url)
-                guard let http = response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-                guard (200..<300).contains(http.statusCode) else {
-                    throw URLError(.badServerResponse)
-                }
-                let decoded = try JSONDecoder().decode(CharacterResponseDTO.self, from: data)
-                let characters = decoded.results.map { dto in
-                    Character(
-                        id: dto.id,
-                        name: dto.name,
-                        status: dto.status,
-                        species: dto.species,
-                        type: dto.type,
-                        gender: dto.gender,
-                        image: RimAvatarURL.fixing(dto.image),
-                        originName: dto.origin.name,
-                        originUrl: dto.origin.url,
-                        locationName: dto.location.name,
-                        locationUrl: dto.location.url,
-                        episodeIds: dto.episode.compactMap { urlString in
-                            guard let last = URL(string: urlString)?.lastPathComponent,
-                                  let id = Int(last) else { return nil }
-                            return id
-                        }
-                    )
-                }
-                return PageResult(
-                    items: characters,
-                    page: page,
-                    totalPages: decoded.info.pages,
-                    hasNext: decoded.info.next != nil
-                )
-            },
-            fetchEpisodes: { page in
-                let url = baseURL.appendingPathComponent("episode")
-                    .appending(queryItems: [URLQueryItem(name: "page", value: "\(page)")])
-                let (data, response) = try await URLSession.shared.data(from: url)
-                guard let http = response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-                guard (200..<300).contains(http.statusCode) else {
-                    throw URLError(.badServerResponse)
-                }
-                let decoded = try JSONDecoder().decode(EpisodeResponseDTO.self, from: data)
-                let episodes = decoded.results.map { dto in
-                    Episode(
-                        id: dto.id,
-                        name: dto.name,
-                        episodeCode: dto.episode,
-                        airDate: dto.airDate,
-                        characterIds: dto.characters.compactMap { urlString in
-                            guard let last = URL(string: urlString)?.lastPathComponent,
-                                  let id = Int(last) else { return nil }
-                            return id
-                        }
-                    )
-                }
-                return PageResult(
-                    items: episodes,
-                    page: page,
-                    totalPages: decoded.info.pages,
-                    hasNext: decoded.info.next != nil
-                )
-            },
-            fetchLocations: { page in
-                let url = baseURL.appendingPathComponent("location")
-                    .appending(queryItems: [URLQueryItem(name: "page", value: "\(page)")])
-                let (data, response) = try await URLSession.shared.data(from: url)
-                guard let http = response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-                guard (200..<300).contains(http.statusCode) else {
-                    throw URLError(.badServerResponse)
-                }
-                let decoded = try JSONDecoder().decode(LocationResponseDTO.self, from: data)
-                let locations = decoded.results.map { dto in
-                    Location(
-                        id: dto.id,
-                        name: dto.name,
-                        type: dto.type,
-                        dimension: dto.dimension,
-                        residentIds: dto.residents.compactMap { urlString in
-                            guard let last = URL(string: urlString)?.lastPathComponent,
-                                  let id = Int(last) else { return nil }
-                            return id
-                        }
-                    )
-                }
-                return PageResult(
-                    items: locations,
-                    page: page,
-                    totalPages: decoded.info.pages,
-                    hasNext: decoded.info.next != nil
-                )
-            }
-        )
-    }()
+    public static let live = APIClient(
+        fetchCharacters: { page in
+            try await RickAndMortyAPI.fetchCharacters(page: page)
+        },
+        fetchEpisodes: { page in
+            try await RickAndMortyAPI.fetchEpisodes(page: page)
+        },
+        fetchLocations: { page in
+            try await RickAndMortyAPI.fetchLocations(page: page)
+        }
+    )
 }
