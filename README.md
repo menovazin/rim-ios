@@ -1,4 +1,4 @@
-# Rim and Morty (iOS+TCA)
+# RIM (iOS+TCA)
 
 ## Краткое описание
 
@@ -27,10 +27,9 @@
 - **Characters: адаптивный grid** — 1–6 колонок по ширине экрана; Episodes и Locations — списки с той же пагинацией.
 - **Пагинация (infinite scroll)** — load-more по трём каталогам.
 - **Боковое меню** — bespoke `RimDrawer` из DesignSystem: Персонажи, Эпизоды, Локации, Выйти.
-- **Тема** — light / dark (persist).
+- **Тема** — light / dark (persist; без отдельного режима system).
 - **Навигация** — `NavigationStack`-эра TCA, type-safe.
 - **Локализация** — English-only.
-- **API:** `https://alpha.syazy.com:1180/api` (контракт, совместимый с Rick and Morty API; backend линейки — [rim-backend](https://github.com/menovazin/rim-backend)).
 
 ---
 
