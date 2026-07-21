@@ -23,12 +23,14 @@ public struct CharacterAvatarCircle: View {
             VStack(spacing: RimSpacing.xxs) {
                 avatarCircle
                 Text(name)
-                    .rimTextStyle(RimTypography.bodySmall)
+                    .rimTextStyle(RimTypography.avatarLabel)
                     .foregroundStyle(theme.colors.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .frame(width: 64)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
+            .frame(width: 64)
         } else {
             avatarCircle
         }
@@ -56,7 +58,6 @@ public struct CharacterAvatarCircle: View {
                 Circle().fill(theme.colors.surface)
             )
             .overlay(
-                // Flutter avatar fallback: Icons.person size 24
                 RimIcon(.person, size: 24, color: theme.colors.textSecondary)
                     .opacity(0) // KF handles failure; kept for parity reference
             )

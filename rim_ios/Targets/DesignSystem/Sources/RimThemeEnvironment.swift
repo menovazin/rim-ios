@@ -13,9 +13,15 @@ public extension EnvironmentValues {
 }
 
 public extension View {
-    /// Injects a `RimTheme` into the environment and applies its color scheme.
-    func rimTheme(_ theme: RimTheme) -> some View {
+    /// Injects a `RimTheme` into the environment.
+    ///
+    /// - Parameters:
+    ///   - theme: Resolved paint theme (always light or dark tokens).
+    ///   - forcesColorScheme: When `true` (default), forces SwiftUI
+    ///     `preferredColorScheme` to match `theme`. When `false` (system
+    ///     preference), only injects tokens and lets the OS control appearance.
+    func rimTheme(_ theme: RimTheme, forcesColorScheme: Bool = true) -> some View {
         environment(\.rimTheme, theme)
-            .preferredColorScheme(theme.colorScheme)
+            .preferredColorScheme(forcesColorScheme ? theme.colorScheme : nil)
     }
 }

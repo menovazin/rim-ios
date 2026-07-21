@@ -109,17 +109,17 @@ final class AppRootTests: XCTestCase {
     // MARK: - Theme preference
 
     @MainActor
-    func test_onAppear_loadsThemeFromThemeStore() async {
-        let store = TestStore(initialState: AppRoot.State(colorScheme: .dark)) {
+    func test_onAppear_loadsPreferenceFromThemeStore() async {
+        let store = TestStore(initialState: AppRoot.State(themePreference: .system)) {
             AppRoot()
         } withDependencies: {
             $0.tokenStore = .inMemory
-            $0.themeStore = .test(scheme: .light)
+            $0.themeStore = .test(preference: .light)
         }
 
         await store.send(.onAppear) {
             $0.hasAppeared = true
-            $0.colorScheme = .light
+            $0.themePreference = .light
         }
 
         await store.receive(\.routeResolved) {
@@ -128,8 +128,8 @@ final class AppRootTests: XCTestCase {
     }
 
     @MainActor
-    func test_onAppear_defaultsToDarkWhenThemeStoreEmpty() async {
-        let store = TestStore(initialState: AppRoot.State(colorScheme: .light)) {
+    func test_onAppear_defaultsToSystemWhenThemeStoreEmpty() async {
+        let store = TestStore(initialState: AppRoot.State(themePreference: .light)) {
             AppRoot()
         } withDependencies: {
             $0.tokenStore = .inMemory
@@ -138,7 +138,7 @@ final class AppRootTests: XCTestCase {
 
         await store.send(.onAppear) {
             $0.hasAppeared = true
-            $0.colorScheme = .dark
+            $0.themePreference = .system
         }
 
         await store.receive(\.routeResolved) {
@@ -147,13 +147,32 @@ final class AppRootTests: XCTestCase {
     }
 
     @MainActor
-    func test_themeToggle_flipsSchemeAndSavesViaThemeStore() async {
-        var saved: RimColorScheme?
+    func test_onAppear_loadsSystemPreference() async {
+        let store = TestStore(initialState: AppRoot.State(themePreference: .dark)) {
+            AppRoot()
+        } withDependencies: {
+            $0.tokenStore = .inMemory
+            $0.themeStore = .test(preference: .system)
+        }
+
+        await store.send(.onAppear) {
+            $0.hasAppeared = true
+            $0.themePreference = .system
+        }
+
+        await store.receive(\.routeResolved) {
+            $0.destination = .login(LoginReducer.State())
+        }
+    }
+
+    @MainActor
+    func test_themeToggle_fromDarkToLightAndSaves() async {
+        var saved: RimThemePreference?
         let store = TestStore(
             initialState: AppRoot.State(
                 destination: .shell(ShellReducer.State()),
                 hasAppeared: true,
-                colorScheme: .dark
+                themePreference: .dark
             )
         ) {
             AppRoot()
@@ -166,7 +185,7 @@ final class AppRootTests: XCTestCase {
         }
 
         await store.send(.destination(.presented(.shell(.delegate(.themeToggleTapped))))) {
-            $0.colorScheme = .light
+            $0.themePreference = .light
         }
 
         XCTAssertEqual(saved, .light)
@@ -174,12 +193,12 @@ final class AppRootTests: XCTestCase {
 
     @MainActor
     func test_themeToggle_fromLightToDark() async {
-        var saved: RimColorScheme?
+        var saved: RimThemePreference?
         let store = TestStore(
             initialState: AppRoot.State(
                 destination: .shell(ShellReducer.State()),
                 hasAppeared: true,
-                colorScheme: .light
+                themePreference: .light
             )
         ) {
             AppRoot()
@@ -192,7 +211,33 @@ final class AppRootTests: XCTestCase {
         }
 
         await store.send(.destination(.presented(.shell(.delegate(.themeToggleTapped))))) {
-            $0.colorScheme = .dark
+            $0.themePreference = .dark
+        }
+
+        XCTAssertEqual(saved, .dark)
+    }
+
+    @MainActor
+    func test_themeToggle_fromSystemToDark() async {
+        var saved: RimThemePreference?
+        let store = TestStore(
+            initialState: AppRoot.State(
+                destination: .shell(ShellReducer.State()),
+                hasAppeared: true,
+                themePreference: .system
+            )
+        ) {
+            AppRoot()
+        } withDependencies: {
+            $0.tokenStore = .inMemory
+            $0.themeStore = ThemeStore(
+                load: { .system },
+                save: { saved = $0 }
+            )
+        }
+
+        await store.send(.destination(.presented(.shell(.delegate(.themeToggleTapped))))) {
+            $0.themePreference = .dark
         }
 
         XCTAssertEqual(saved, .dark)

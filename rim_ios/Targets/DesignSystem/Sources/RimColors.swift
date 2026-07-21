@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// The active color scheme for the app.
+/// Resolved paint color scheme for the app (light or dark tokens only).
 ///
-/// Distinct from SwiftUI's `ColorScheme` because the RIM scheme is
-/// **user-overridable** (via the Drawer theme toggle in a later issue) and
-/// persistence-ready — it is not merely "follow system".
+/// Distinct from SwiftUI's `ColorScheme` and from `RimThemePreference`.
+/// Preference may be `.system`; this type is always the **resolved** scheme
+/// fed into `RimTheme` / `RimColors`.
 public enum RimColorScheme: String, CaseIterable, Sendable {
     case dark
     case light

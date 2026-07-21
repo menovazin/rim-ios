@@ -4,15 +4,11 @@ import Foundation
 
 // MARK: - ThemeStore dependency
 
-/// Persists the active `RimColorScheme` (`UserDefaults` key `"theme"`).
-///
-/// Mirrors the canonical Flutter `ThemeService` which saves the active theme
-/// in `SharedPreferences` under key `"theme"`. Sole live client for product
-/// theme preference (owned by `AppRoot` state).
+/// Persists the user `RimThemePreference` (`UserDefaults` key `"theme"`).
 @DependencyClient
 public struct ThemeStore: Sendable {
-    var load: @Sendable () -> RimColorScheme?
-    var save: @Sendable (RimColorScheme) -> Void
+    var load: @Sendable () -> RimThemePreference?
+    var save: @Sendable (RimThemePreference) -> Void
 }
 
 extension ThemeStore: DependencyKey {
@@ -39,27 +35,26 @@ extension DependencyValues {
 // MARK: - In-memory test helpers
 
 extension ThemeStore {
-    /// Returns a deterministic in-memory test client seeded with a scheme.
+    /// Returns a deterministic in-memory test client seeded with a preference.
     ///
     /// Tests inject this so they never touch `UserDefaults`:
     /// ```swift
-    /// let store = TestStore(initialState: ...) { ShellReducer() }
-    /// store.dependencies.themeStore = .test(scheme: .light)
+    /// store.dependencies.themeStore = .test(preference: .light)
     /// ```
-    public static func test(scheme: RimColorScheme? = nil) -> ThemeStore {
-        let box = Box(initial: scheme)
+    public static func test(preference: RimThemePreference? = nil) -> ThemeStore {
+        let box = Box(initial: preference)
         return ThemeStore(
             load: { box.current },
             save: { box.current = $0 }
         )
     }
 
-    /// Returns an in-memory client with no stored scheme.
-    public static var inMemory: ThemeStore { .test(scheme: nil) }
+    /// Returns an in-memory client with no stored preference.
+    public static var inMemory: ThemeStore { .test(preference: nil) }
 
     private final class Box: @unchecked Sendable {
-        var current: RimColorScheme?
-        init(initial: RimColorScheme?) { self.current = initial }
+        var current: RimThemePreference?
+        init(initial: RimThemePreference?) { self.current = initial }
     }
 }
 
@@ -74,11 +69,13 @@ extension ThemeStore {
     public static let live: ThemeStore = {
         ThemeStore(
             load: {
-                guard let raw = UserDefaults.standard.string(forKey: ThemeStoreConstants.key) else { return nil }
-                return RimColorScheme(rawValue: raw)
+                guard let raw = UserDefaults.standard.string(forKey: ThemeStoreConstants.key) else {
+                    return nil
+                }
+                return RimThemePreference(rawValue: raw)
             },
-            save: { scheme in
-                UserDefaults.standard.set(scheme.rawValue, forKey: ThemeStoreConstants.key)
+            save: { preference in
+                UserDefaults.standard.set(preference.rawValue, forKey: ThemeStoreConstants.key)
             }
         )
     }()

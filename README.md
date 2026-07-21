@@ -27,7 +27,7 @@
 - **Characters: адаптивный grid** — 1–6 колонок по ширине экрана; Episodes и Locations — списки с той же пагинацией.
 - **Пагинация (infinite scroll)** — load-more по трём каталогам.
 - **Боковое меню** — bespoke `RimDrawer` из DesignSystem: Персонажи, Эпизоды, Локации, Выйти.
-- **Тема** — light / dark (persist; без отдельного режима system).
+- **Тема** — light / dark / system (persist).
 - **Навигация** — `NavigationStack`-эра TCA, type-safe.
 - **Локализация** — English-only.
 

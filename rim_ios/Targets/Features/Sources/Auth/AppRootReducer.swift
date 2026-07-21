@@ -17,16 +17,16 @@ public struct AppRoot {
         /// Guards against redundant routing on repeated `onAppear` calls.
         public var hasAppeared: Bool = false
         /// Product theme preference (persisted via `ThemeStore`, key `"theme"`).
-        public var colorScheme: RimColorScheme = .dark
+        public var themePreference: RimThemePreference = .system
 
         public init(
             destination: AppRootDestination.State? = nil,
             hasAppeared: Bool = false,
-            colorScheme: RimColorScheme = .dark
+            themePreference: RimThemePreference = .system
         ) {
             self.destination = destination
             self.hasAppeared = hasAppeared
-            self.colorScheme = colorScheme
+            self.themePreference = themePreference
         }
     }
 
@@ -47,7 +47,7 @@ public struct AppRoot {
             case .onAppear:
                 if state.hasAppeared { return .none }
                 state.hasAppeared = true
-                state.colorScheme = themeStore.load() ?? .dark
+                state.themePreference = themeStore.load() ?? .system
 
                 return .run { send in
                     let token = await tokenStore.getToken()
@@ -74,8 +74,8 @@ public struct AppRoot {
                 }
 
             case .destination(.presented(.shell(.delegate(.themeToggleTapped)))):
-                let next: RimColorScheme = state.colorScheme == .dark ? .light : .dark
-                state.colorScheme = next
+                let next = state.themePreference.toggled
+                state.themePreference = next
                 themeStore.save(next)
                 return .none
 

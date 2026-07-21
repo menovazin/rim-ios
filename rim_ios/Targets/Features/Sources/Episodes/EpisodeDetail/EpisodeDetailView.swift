@@ -27,10 +27,9 @@ public struct EpisodeDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     heroCard
-                        .padding(.top, RimSpacing.xxl)
 
                     charactersSection
-                        .padding(.top, RimSpacing.xxxl)
+                        .padding(.top, RimSpacing.huge)
                 }
                 .padding(RimSpacing.xxl)
             }
@@ -89,13 +88,10 @@ public struct EpisodeDetailView: View {
         .padding(RimSpacing.xxxl)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            LinearGradient(
-                colors: [
-                    theme.colors.primary.opacity(0.15),
-                    theme.colors.surface,
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+            RimDetailGradient.linear(
+                accent: theme.colors.primary,
+                surface: theme.colors.surface,
+                background: theme.colors.background
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: RimRadius.image))
